@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane stylesheets="@style.css" prefHeight="550.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.TableController">
+   <children>
+      <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <Label text="Мои заявки">
+               <font>
+                  <Font size="26.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="25.0" top="25.0" />
+               </VBox.margin>
+            </Label>
+            <TableView fx:id="tableView" prefHeight="334.0" prefWidth="710.0" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="service" maxWidth="70.0" prefWidth="169.60001504421234" text="№">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="service" />
+                     </cellValueFactory>
+                  </TableColumn>
+                  <TableColumn minWidth="0.0" prefWidth="158.40003204345703" text="Дата подачи заявления">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="price" />
+                     </cellValueFactory>
+                  </TableColumn>
+                  <TableColumn prefWidth="306.39991760253906" text="Описание проблемы" />
+                  <TableColumn maxWidth="335.9999938964844" prefWidth="171.20001220703125" text="Статус" />
+               </columns>
+            </TableView>
+            <HBox alignment="CENTER" prefHeight="106.0" prefWidth="710.0" spacing="130.0">
+               <children>
+                  <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="Назад">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

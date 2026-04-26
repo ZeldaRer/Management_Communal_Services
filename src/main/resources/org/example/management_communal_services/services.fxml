@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane stylesheets="@style.css" prefHeight="550.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.TableController">
+   <children>
+      <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <children>
+            <Label text="Список услуг компании">
+               <font>
+                  <Font size="26.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="25.0" top="25.0" />
+               </VBox.margin>
+            </Label>
+            <TableView fx:id="tableView" prefHeight="430.0" prefWidth="710.0" VBox.vgrow="ALWAYS">
+               <columns>
+                  <TableColumn fx:id="service" prefWidth="576.7999204397202" text="Услуга">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="service" />
+                     </cellValueFactory>
+                  </TableColumn>
+                  <TableColumn minWidth="0.0" prefWidth="132.800048828125" text="Цена, р.">
+                     <cellValueFactory>
+                        <PropertyValueFactory property="price" />
+                     </cellValueFactory>
+                  </TableColumn>
+               </columns>
+            </TableView>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="550.0" prefWidth="1000.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.management_communal_services.OwnerController"
+>
+   <children>
+      <HBox prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <VBox alignment="CENTER" prefHeight="600.0" prefWidth="270.0" styleClass="sidebar">
+               <children>
+                  <ImageView fitHeight="200.0" fitWidth="200.0">
+                     <image>
+                        <Image url="@bes.png" />
+                     </image>
+                     <VBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </VBox.margin>
+                  </ImageView>
+                  <Label styleClass="title-panel" text="ФИО Собственника">
+                     <VBox.margin>
+                        <Insets bottom="25.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font size="20.0" />
+                     </font>
+                  </Label>
+                  <Button mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Личный кабинет" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleMeters" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Показания счётчиков" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleServices" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Услуги" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleRequest" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Подать заявку на услуги" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button layoutX="10.0" layoutY="436.0" mnemonicParsing="false" onAction="#handleHistory" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="История заявок" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleLogout" prefHeight="26.0" prefWidth="100.0" styleClass="sidebar-button" text="Выйти">
+                     <VBox.margin>
+                        <Insets bottom="15.0" top="25.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+               </children>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </VBox>
+            <Pane fx:id="contentArea" styleClass="content-area" HBox.hgrow="SOMETIMES">
+               <HBox.margin>
+                  <Insets bottom="5.0" top="5.0" />
+               </HBox.margin>
+            </Pane>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>

@@ -1,0 +1,100 @@
+.root {
+    /* Твоя цветовая палитра */
+    -bg-dark: #3A3838;
+    -bg-light: #F8F8F8;
+    -accent: #F0A90E;
+    -text-main: #333333;
+    -text-white: #ffffff;
+
+    /* Шрифт по умолчанию */
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Добавляем в style.css */
+.login-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold; /* Можно добавить жирность для красоты */
+}
+
+.login-subtitle {
+    -fx-font-size: 18px; /* Для подписи "Собственник|Сотрудник УК" */
+    -fx-text-fill: #666666; /* Чуть более серый цвет */
+}
+
+/* --- Стили для окна входа (Login) --- */
+.login-background {
+    -fx-background-color: -bg-light;
+}
+
+.login-button {
+    -fx-background-color: -accent;
+    -fx-text-fill: -text-white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+.login-button:hover {
+    -fx-background-color: derive(-accent, -10%);
+}
+
+.button {
+    -fx-background-color: #F0A90E;
+    -fx-text-fill: -text-main;
+    -fx-font-size: 16px;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: -accent;
+    -fx-text-fill: -text-white;
+}
+
+/* --- Стили для главного окна (Owner) --- */
+
+/* Боковая панель (левая часть) */
+.sidebar {
+    -fx-background-color: -bg-dark;
+}
+
+/* Кнопки в боковой панели */
+.sidebar-button {
+    -fx-background-color: #F0A90E;
+    -fx-text-fill: -text-main;
+    -fx-font-size: 16px;
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+/* Эффект при наведении на кнопку меню */
+.sidebar-button:hover {
+    -fx-background-color: -accent;
+    -fx-text-fill: -text-white;
+}
+
+/* Активная кнопка (можно добавлять этот класс программно) */
+.sidebar-button.active {
+    -fx-background-color: -accent;
+}
+
+.title-panel {
+    -fx-text-fill: #fff;
+    -fx-font-weight: bold;
+}
+
+/* Область контента (правая часть) */
+.content-area {
+    -fx-background-color: -bg-light;
+    -fx-padding: 20;
+}
+
+/* Заголовки в контенте */
+.content-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-main;
+}
