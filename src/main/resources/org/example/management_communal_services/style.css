@@ -13,7 +13,7 @@
 /* Добавляем в style.css */
 .login-title {
     -fx-font-size: 28px;
-    -fx-font-weight: bold; /* Можно добавить жирность для красоты */
+    -fx-font-weight: bold;
 }
 
 .login-subtitle {

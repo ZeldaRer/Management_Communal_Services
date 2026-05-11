@@ -1,108 +1,155 @@
 package org.example.management_communal_services;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
+import javafx.scene.layout.AnchorPane;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class OwnerController {
 
     @FXML
-    private Pane contentArea;  // Правая панель для загрузки контента
+    private AnchorPane contentArea;
+
+    @FXML
+    private Label lblFullName;
+
+    @FXML
+    private Label lblAccountNumber;
+
+    @FXML
+    private Label lblAddress;
+
+    // ID текущего пользователя
+    private int currentOwnerId;
+    private String currentOwnerName;
+
+    // Метод для инициализации данных владельца после входа
+    public void setCurrentOwner(int ownerId, String ownerName) {
+        this.currentOwnerId = ownerId;
+        this.currentOwnerName = ownerName;
+        if (lblFullName != null) {
+            lblFullName.setText(ownerName);
+        }
+        loadOwnerData();
+    }
 
     @FXML
     public void initialize() {
-        // При загрузке окна сразу показываем "Личный кабинет"
-        loadContent("profile.fxml");
+        // По умолчанию открываем личный кабинет
+        loadProfile();
     }
 
-    // Универсальный метод для загрузки FXML в правую панель
-    private void loadContent(String fxmlFile) {
-        try {
-            // Очищаем текущее содержимое
-            contentArea.getChildren().clear();
+    // Загрузка данных владельца из БД для отображения в профиле
+    private void loadOwnerData() {
+        if (currentOwnerId == 0) return;
 
-            // Загружаем новый FXML файл
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
-            Parent view = loader.load();
+        String sql = "SELECT full_name, account_number, street, building, apartment_number " +
+                "FROM Owners WHERE id = ?";
 
-            // Добавляем загруженный вид в правую панель
-            contentArea.getChildren().add(view);
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // Растягиваем на всю доступную область
-            if (view instanceof javafx.scene.layout.Region) {
-                javafx.scene.layout.Region region = (javafx.scene.layout.Region) view;
-                region.prefWidthProperty().bind(contentArea.widthProperty());
-                region.prefHeightProperty().bind(contentArea.heightProperty());
+            pstmt.setInt(1, currentOwnerId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                if (lblFullName != null) lblFullName.setText(rs.getString("full_name"));
+                if (lblAccountNumber != null) lblAccountNumber.setText(rs.getString("account_number"));
+                if (lblAddress != null) {
+                    lblAddress.setText(rs.getString("street") + ", д. " +
+                            rs.getString("building") + ", кв. " +
+                            rs.getString("apartment_number"));
+                }
             }
 
-        } catch (IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Ошибка загрузки файла: " + fxmlFile);
-
-            // Показываем сообщение об ошибке
-            Label errorLabel = new Label("Ошибка загрузки раздела");
-            errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 16px;");
-            contentArea.getChildren().add(errorLabel);
         }
     }
 
-    //  ОБРАБОТЧИКИ КНОПОК МЕНЮ
-
     @FXML
     private void handleProfile() {
-        System.out.println("→ Загрузка: Личный кабинет");
-        loadContent("profile.fxml");
+        loadProfile();
     }
 
     @FXML
     private void handleMeters() {
-        System.out.println("→ Загрузка: Показания счётчиков");
-        loadContent("meters.fxml");
+        loadFXML("meters.fxml");
     }
 
     @FXML
     private void handleServices() {
-        System.out.println("→ Загрузка: Услуги");
-        loadContent("services.fxml");
+        loadFXML("services.fxml");
     }
 
     @FXML
     private void handleRequest() {
-        System.out.println("→ Загрузка: Подать заявку");
-        loadContent("request.fxml");
+        loadFXML("request.fxml");
     }
 
     @FXML
     private void handleHistory() {
-        System.out.println("→ Загрузка: История заявок");
-        loadContent("my-statement.fxml");
-    }
-
-    @FXML
-    private void handleLogout(ActionEvent event) {
         try {
-            System.out.println("→ Выход из системы");
-
-            // Загружаем окно входа
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("my-statement.fxml"));
             Parent root = loader.load();
 
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Вход в систему");
-            stage.show();
+            // Передаем ID текущего владельца в контроллер истории заявок
+            HistoryController historyController = loader.getController();
+            historyController.setCurrentOwnerId(currentOwnerId);
+
+            // Загружаем контент с автоматическим растягиванием
+            loadContent(root);
 
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Ошибка при выходе из системы");
         }
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            contentArea.getScene().setRoot(loader.load());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Универсальный метод загрузки FXML с применением растягивания
+    private void loadFXML(String fxmlFile) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
+            Parent root = loader.load();
+            // Применяем универсальное растягивание для любого загруженного контента
+            loadContent(root);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Универсальный метод: загружает контент и растягивает его на всю область
+    private void loadContent(Parent root) {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(root);
+
+        // Если загруженный корневой элемент — AnchorPane, закрепляем его по всем сторонам
+        if (root instanceof AnchorPane) {
+            AnchorPane.setTopAnchor(root, 0.0);
+            AnchorPane.setBottomAnchor(root, 0.0);
+            AnchorPane.setLeftAnchor(root, 0.0);
+            AnchorPane.setRightAnchor(root, 0.0);
+        }
+    }
+
+    // Загрузка профиля через универсальный метод
+    private void loadProfile() {
+        loadFXML("profile.fxml");
     }
 }

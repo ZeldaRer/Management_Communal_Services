@@ -7,13 +7,10 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="1000.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.example.management_communal_services.OwnerController"
->
+<AnchorPane prefHeight="550.0" prefWidth="1000.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.OwnerController">
    <children>
       <HBox prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -73,11 +70,11 @@
                   <Insets />
                </HBox.margin>
             </VBox>
-            <Pane fx:id="contentArea" styleClass="content-area" HBox.hgrow="SOMETIMES">
+            <AnchorPane fx:id="contentArea" styleClass="content-area" HBox.hgrow="ALWAYS">
                <HBox.margin>
                   <Insets bottom="5.0" top="5.0" />
                </HBox.margin>
-            </Pane>
+            </AnchorPane>
          </children>
       </HBox>
    </children>
