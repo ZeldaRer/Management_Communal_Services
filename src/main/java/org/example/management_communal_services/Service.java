@@ -1,12 +1,22 @@
 package org.example.management_communal_services;
 
 public class Service {
+    private String category;
     private String name;
     private double price;
 
-    public Service(String name, double price) {
+    public Service(String category, String name, double price) {
+        this.category = category;
         this.name = name;
         this.price = price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getName() {

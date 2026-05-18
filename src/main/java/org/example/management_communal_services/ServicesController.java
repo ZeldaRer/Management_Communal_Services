@@ -21,6 +21,9 @@ public class ServicesController {
     private TableColumn<Service, String> serviceNameColumn;
 
     @FXML
+    private TableColumn<Service, String> serviceCategoryColumn;
+
+    @FXML
     private TableColumn<Service, Double> servicePriceColumn;
 
     private ObservableList<Service> servicesList = FXCollections.observableArrayList();
@@ -28,6 +31,7 @@ public class ServicesController {
     @FXML
     public void initialize() {
         serviceNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        serviceCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
         servicePriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
         // УБРАНЫ эти строки:
@@ -42,15 +46,16 @@ public class ServicesController {
     }
 
     private void loadServices() {
-        String sql = "SELECT name, price FROM Services";
+        String sql = "SELECT category, name, price FROM Services";
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
+                String category = rs.getString("category");
                 String name = rs.getString("name");
                 double price = rs.getDouble("price");
-                servicesList.add(new Service(name, price));
+                servicesList.add(new Service(category, name, price));
             }
         } catch (SQLException e) {
             e.printStackTrace();

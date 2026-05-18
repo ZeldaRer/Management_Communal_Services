@@ -24,7 +24,7 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </VBox.margin>
                   </ImageView>
-                  <Label styleClass="title-panel" text="ФИО Собственника">
+                  <Label styleClass="title-panel" text="*текущие время и дата*">
                      <VBox.margin>
                         <Insets bottom="25.0" />
                      </VBox.margin>
@@ -32,7 +32,7 @@
                         <Font size="20.0" />
                      </font>
                   </Label>
-                  <Button mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Личный кабинет" VBox.vgrow="SOMETIMES">
+                  <Button mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Главное" VBox.vgrow="SOMETIMES">
                      <font>
                         <Font size="16.0" />
                      </font>

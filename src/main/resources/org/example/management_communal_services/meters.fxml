@@ -9,19 +9,100 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane stylesheets="@style.css" prefHeight="550.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
-            <Label text="Введите показания счётчиков за текущий месяц">
+            <VBox alignment="CENTER">
+               <children>
+                  <Label alignment="CENTER" prefWidth="200.0" text="Внимание!">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </Label>
+                  <HBox alignment="CENTER" prefHeight="30.0" prefWidth="710.0" spacing="30.0">
+                     <children>
+                        <Label text="Ваши предыдущие показания за:">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="45.0" prefWidth="710.0" spacing="25.0">
+                     <children>
+                        <Label prefWidth="200.0" text="Электричество:">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefWidth="125.0" text="Х">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="45.0" prefWidth="200.0" spacing="25.0">
+                     <children>
+                        <Label prefWidth="200.0" text="Горячая вода (ГВС):">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefWidth="125.0" text="Х">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="45.0" prefWidth="200.0" spacing="25.0">
+                     <children>
+                        <Label prefWidth="200.0" text="Холодная вода (ХВС):">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefWidth="125.0" text="Х">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+               </children>
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+            </VBox>
+            <Label text="Введите показания счётчиков за *текущую дату*">
                <font>
                   <Font size="24.0" />
                </font>
                <VBox.margin>
-                  <Insets bottom="25.0" top="25.0" />
+                  <Insets bottom="25.0" top="40.0" />
                </VBox.margin>
             </Label>
-            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="200.0" spacing="30.0">
+            <HBox alignment="CENTER" prefHeight="70.0" prefWidth="200.0" spacing="30.0">
                <children>
                   <Label prefWidth="200.0" text="Электричество">
                      <font>
@@ -35,7 +116,7 @@
                   </TextField>
                </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="200.0" spacing="30.0">
+            <HBox alignment="CENTER" prefHeight="70.0" prefWidth="200.0" spacing="30.0">
                <children>
                   <Label prefWidth="200.0" text="Горячая вода (ГВС)">
                      <font>
@@ -49,7 +130,7 @@
                   </TextField>
                </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="200.0" spacing="30.0">
+            <HBox alignment="CENTER" prefHeight="70.0" prefWidth="200.0" spacing="30.0">
                <children>
                   <Label prefWidth="200.0" text="Холодная вода (ХВС)">
                      <font>
@@ -63,45 +144,17 @@
                   </TextField>
                </children>
             </HBox>
-            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="200.0" spacing="30.0">
-               <children>
-                  <Label prefWidth="200.0" text="Газоснабжение">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </Label>
-                  <TextField prefWidth="300.0">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </TextField>
-               </children>
-            </HBox>
-            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="200.0" spacing="30.0">
-               <children>
-                  <Label prefWidth="200.0" text="Отопление">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </Label>
-                  <TextField prefWidth="300.0">
-                     <font>
-                        <Font size="18.0" />
-                     </font>
-                  </TextField>
-               </children>
-            </HBox>
-            <HBox alignment="CENTER" prefHeight="106.0" prefWidth="710.0" spacing="130.0">
+            <HBox alignment="CENTER" prefHeight="80.0" prefWidth="710.0" spacing="130.0">
                <VBox.margin>
-                  <Insets bottom="15.0" top="15.0" />
+                  <Insets bottom="5.0" top="10.0" />
                </VBox.margin>
                <children>
-                  <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="Отправить">
+                  <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" text="Отправить">
                      <font>
                         <Font size="16.0" />
                      </font>
                   </Button>
-                  <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="Оформить квитанцию">
+                  <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" text="Оформить квитанцию">
                      <font>
                         <Font size="16.0" />
                      </font>

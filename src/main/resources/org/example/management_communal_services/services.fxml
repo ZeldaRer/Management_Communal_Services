@@ -22,9 +22,10 @@
             </Label>
             <TableView fx:id="servicesTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                <columns>
+                  <TableColumn fx:id="serviceCategoryColumn" prefWidth="187.20001828670502" text="Категория" />
 
-                  <TableColumn fx:id="serviceNameColumn" text="Услуга" />
-                  <TableColumn fx:id="servicePriceColumn" text="Цена, р." />
+                  <TableColumn fx:id="serviceNameColumn" prefWidth="342.3999938964844" text="Услуга" />
+                  <TableColumn fx:id="servicePriceColumn" prefWidth="125.5999755859375" text="Цена, р." />
                </columns>
                <VBox.margin>
                   <Insets />
