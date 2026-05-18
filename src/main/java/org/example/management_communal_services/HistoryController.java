@@ -18,7 +18,13 @@ public class HistoryController {
     private TableView<ApplicationHistory> applicationsTable;
 
     @FXML
-    private TableColumn<ApplicationHistory, Integer> appIdColumn;
+    private TableColumn<ApplicationHistory, Integer> appNumColumn;  // Порядковый номер
+
+    @FXML
+    private TableColumn<ApplicationHistory, String> appCategoryColumn;  // Категория
+
+    @FXML
+    private TableColumn<ApplicationHistory, String> appServiceColumn;  // Услуга
 
     @FXML
     private TableColumn<ApplicationHistory, String> appDateColumn;
@@ -40,7 +46,9 @@ public class HistoryController {
     @FXML
     public void initialize() {
         // Привязка колонок к полям модели
-        appIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        appNumColumn.setCellValueFactory(new PropertyValueFactory<>("rowNum"));
+        appCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
+        appServiceColumn.setCellValueFactory(new PropertyValueFactory<>("serviceName"));
         appDateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
         appDescColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         appStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -53,19 +61,45 @@ public class HistoryController {
 
     private void loadApplications() {
         if (currentOwnerId == 0) return;
-        String sql = "SELECT id, created_at, description, status FROM Applications WHERE owner_id = ? ORDER BY created_at DESC";
+
+        // SQL с JOIN для получения категории и названия услуги
+        // Сортировка от старых к новым (ASC), нумерация через переменную
+        String sql = """
+            SELECT 
+                s.category,
+                s.name as service_name,
+                a.created_at,
+                a.description,
+                a.status
+            FROM Applications a
+            JOIN Services s ON a.service_id = s.id
+            WHERE a.owner_id = ?
+            ORDER BY a.created_at ASC
+        """;
+
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, currentOwnerId);
             ResultSet rs = pstmt.executeQuery();
+
             applicationsList.clear();
+            int rowNum = 1;  // Нумерация начинается с 1
+
             while (rs.next()) {
+                String category = rs.getString("category");
+                String serviceName = rs.getString("service_name");
+                String date = rs.getString("created_at");
+                String description = rs.getString("description");
+                String status = rs.getString("status");
+
                 applicationsList.add(new ApplicationHistory(
-                        rs.getInt("id"),
-                        rs.getString("created_at"),
-                        rs.getString("description"),
-                        rs.getString("status")
+                        rowNum++,
+                        category,
+                        serviceName,
+                        date,
+                        description,
+                        status
                 ));
             }
         } catch (SQLException e) {

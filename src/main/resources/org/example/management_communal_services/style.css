@@ -76,9 +76,12 @@
     -fx-text-fill: -text-white;
 }
 
-/* Активная кнопка (можно добавлять этот класс программно) */
+/* Активная кнопка (увеличенный шрифт и белый цвет) */
 .sidebar-button.active {
     -fx-background-color: -accent;
+    -fx-text-fill: -text-white;
+    -fx-font-size: 18px;  /* Увеличенный шрифт */
+    -fx-font-weight: bold;
 }
 
 .title-panel {

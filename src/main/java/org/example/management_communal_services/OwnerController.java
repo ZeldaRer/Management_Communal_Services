@@ -3,6 +3,7 @@ package org.example.management_communal_services;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 
@@ -26,6 +27,25 @@ public class OwnerController {
     @FXML
     private Label lblAddress;
 
+    // Кнопки меню для подсветки активной
+    @FXML
+    private Button btnProfile;
+
+    @FXML
+    private Button btnMeters;
+
+    @FXML
+    private Button btnServices;
+
+    @FXML
+    private Button btnRequest;
+
+    @FXML
+    private Button btnHistory;
+
+    @FXML
+    private Button btnLogout;
+
     // ID текущего пользователя
     private int currentOwnerId;
     private String currentOwnerName;
@@ -42,6 +62,8 @@ public class OwnerController {
 
     @FXML
     public void initialize() {
+        // Устанавливаем активную кнопку "Главное" при начальном входе
+        setActiveButton("profile");
         // По умолчанию открываем личный кабинет
         loadProfile();
     }
@@ -50,6 +72,7 @@ public class OwnerController {
     private void loadOwnerData() {
         if (currentOwnerId == 0) return;
 
+        // SQL-запрос для получения данных собственника по ID
         String sql = "SELECT full_name, account_number, street, building, apartment_number " +
                 "FROM Owners WHERE id = ?";
 
@@ -60,6 +83,7 @@ public class OwnerController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
+                // Заполняем лейблы данными из результата запроса
                 if (lblFullName != null) lblFullName.setText(rs.getString("full_name"));
                 if (lblAccountNumber != null) lblAccountNumber.setText(rs.getString("account_number"));
                 if (lblAddress != null) {
@@ -74,28 +98,34 @@ public class OwnerController {
         }
     }
 
+    // Обработчики кнопок меню: устанавливают активную кнопку и загружают соответствующий контент
     @FXML
     private void handleProfile() {
+        setActiveButton("profile");
         loadProfile();
     }
 
     @FXML
     private void handleMeters() {
+        setActiveButton("meters");
         loadFXML("meters.fxml");
     }
 
     @FXML
     private void handleServices() {
+        setActiveButton("services");
         loadFXML("services.fxml");
     }
 
     @FXML
     private void handleRequest() {
+        setActiveButton("request");
         loadFXML("request.fxml");
     }
 
     @FXML
     private void handleHistory() {
+        setActiveButton("history");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("my-statement.fxml"));
             Parent root = loader.load();
@@ -112,9 +142,39 @@ public class OwnerController {
         }
     }
 
+    // Метод для установки активной кнопки: снимает класс "active" со всех и добавает нужной
+    private void setActiveButton(String buttonName) {
+        // Сбрасываем все кнопки (убираем класс active)
+        btnProfile.getStyleClass().remove("active");
+        btnMeters.getStyleClass().remove("active");
+        btnServices.getStyleClass().remove("active");
+        btnRequest.getStyleClass().remove("active");
+        btnHistory.getStyleClass().remove("active");
+
+        // Добавляем класс active нужной кнопке через switch
+        switch (buttonName) {
+            case "profile":
+                btnProfile.getStyleClass().add("active");
+                break;
+            case "meters":
+                btnMeters.getStyleClass().add("active");
+                break;
+            case "services":
+                btnServices.getStyleClass().add("active");
+                break;
+            case "request":
+                btnRequest.getStyleClass().add("active");
+                break;
+            case "history":
+                btnHistory.getStyleClass().add("active");
+                break;
+        }
+    }
+
     @FXML
     private void handleLogout() {
         try {
+            // Загружаем окно входа и заменяем текущую сцену
             FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
             contentArea.getScene().setRoot(loader.load());
         } catch (IOException e) {
@@ -122,7 +182,7 @@ public class OwnerController {
         }
     }
 
-    // Универсальный метод загрузки FXML с применением растягивания
+    // Универсальный метод загрузки FXML: загружает файл и применяет растягивание контента
     private void loadFXML(String fxmlFile) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
@@ -134,7 +194,7 @@ public class OwnerController {
         }
     }
 
-    // Универсальный метод: загружает контент и растягивает его на всю область
+    // Универсальный метод: загружает контент в contentArea и закрепляет его по всем сторонам AnchorPane
     private void loadContent(Parent root) {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(root);
@@ -148,7 +208,7 @@ public class OwnerController {
         }
     }
 
-    // Загрузка профиля через универсальный метод
+    // Загрузка профиля через универсальный метод loadFXML
     private void loadProfile() {
         loadFXML("profile.fxml");
     }

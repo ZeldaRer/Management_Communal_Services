@@ -8,9 +8,13 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.HistoryController">
+<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.management_communal_services.HistoryController">
    <children>
-      <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0"
+            prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
+            AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
             <Label text="Мои заявки">
                <font>
@@ -20,12 +24,15 @@
                   <Insets bottom="25.0" top="25.0" />
                </VBox.margin>
             </Label>
-            <TableView fx:id="applicationsTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <TableView fx:id="applicationsTable" prefHeight="334.0" prefWidth="710.0"
+                       VBox.vgrow="ALWAYS">
                <columns>
-                  <TableColumn fx:id="appIdColumn" text="№" />
-                  <TableColumn fx:id="appDateColumn" text="Дата подачи заявления" />
+                  <TableColumn fx:id="appNumColumn" maxWidth="50.0" prefWidth="50.0" text="№" />
+                  <TableColumn fx:id="appCategoryColumn" maxWidth="120.0" prefWidth="100.0" text="Категория" />
+                  <TableColumn fx:id="appServiceColumn" prefWidth="150.0" text="Услуга" />
+                  <TableColumn fx:id="appDateColumn" maxWidth="120.0" prefWidth="100.0" text="Дата подачи" />
                   <TableColumn fx:id="appDescColumn" text="Описание проблемы" />
-                  <TableColumn fx:id="appStatusColumn" text="Статус" />
+                  <TableColumn fx:id="appStatusColumn" maxWidth="150.0" prefWidth="120.0" text="Статус" />
                </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

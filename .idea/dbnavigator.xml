@@ -47,14 +47,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Applications" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/sqlite_sequence" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Services" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Tariffs" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Owners" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Tariffs" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Services" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Applications" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">

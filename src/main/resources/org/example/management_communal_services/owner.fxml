@@ -24,42 +24,50 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </VBox.margin>
                   </ImageView>
-                  <Label styleClass="title-panel" text="*текущие время и дата*">
+                  <Label styleClass="title-panel" text="*текущие время*">
                      <VBox.margin>
-                        <Insets bottom="25.0" />
+                        <Insets bottom="10.0" />
                      </VBox.margin>
+                     <font>
+                        <Font size="22.0" />
+                     </font>
+                  </Label>
+                  <Label styleClass="title-panel" text="*текущая дата*">
                      <font>
                         <Font size="20.0" />
                      </font>
-                  </Label>
-                  <Button mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Главное" VBox.vgrow="SOMETIMES">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
-                  <Button mnemonicParsing="false" onAction="#handleMeters" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Показания счётчиков" VBox.vgrow="SOMETIMES">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
-                  <Button mnemonicParsing="false" onAction="#handleServices" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Услуги" VBox.vgrow="SOMETIMES">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
-                  <Button mnemonicParsing="false" onAction="#handleRequest" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Подать заявку на услуги" VBox.vgrow="SOMETIMES">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
-                  <Button layoutX="10.0" layoutY="436.0" mnemonicParsing="false" onAction="#handleHistory" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="История заявок" VBox.vgrow="SOMETIMES">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Button>
-                  <Button mnemonicParsing="false" onAction="#handleLogout" prefHeight="26.0" prefWidth="100.0" styleClass="sidebar-button" text="Выйти">
                      <VBox.margin>
-                        <Insets bottom="15.0" top="25.0" />
+                        <Insets bottom="25.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Button fx:id="btnProfile" mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Главное" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnMeters" mnemonicParsing="false" onAction="#handleMeters" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Показания счётчиков" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnServices" mnemonicParsing="false" onAction="#handleServices" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Услуги" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnRequest" mnemonicParsing="false" onAction="#handleRequest" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Подать заявку на услуги" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnHistory" layoutX="10.0" layoutY="436.0" mnemonicParsing="false" onAction="#handleHistory" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="История заявок" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnLogout" mnemonicParsing="false" onAction="#handleLogout" prefHeight="26.0" prefWidth="100.0" styleClass="sidebar-button" text="Выйти">
+                     <VBox.margin>
+                        <Insets bottom="10.0" top="25.0" />
                      </VBox.margin>
                      <font>
                         <Font size="16.0" />
