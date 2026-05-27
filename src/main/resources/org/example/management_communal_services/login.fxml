@@ -42,26 +42,29 @@
                         <Insets bottom="5.0" left="5.0" top="5.0" />
                     </padding>
                 </VBox>
-                <VBox alignment="CENTER" prefHeight="379.0" prefWidth="280.0" spacing="15.0" HBox.hgrow="SOMETIMES">
+                <VBox alignment="CENTER" prefHeight="379.0" prefWidth="280.0" spacing="10.0" HBox.hgrow="SOMETIMES">
                     <children>
                         <Label styleClass="login-title" text="Авторизация">
                             <font>
                                 <Font size="28.0" />
                             </font>
+                     <VBox.margin>
+                        <Insets top="15.0" />
+                     </VBox.margin>
                         </Label>
-                        <Label styleClass="login-subtitle" text="Собственник|Сотрудник УК">
+                        <Label styleClass="login-subtitle" text="Собственник">
                             <font>
                                 <Font size="18.0" />
                             </font>
                         </Label>
                         <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="20.0">
                             <children>
-                                <Label contentDisplay="CENTER" prefWidth="48.0" text="Логин" textAlignment="CENTER">
+                                <Label contentDisplay="CENTER" prefWidth="50.0" text="Логин" textAlignment="CENTER">
                                     <HBox.margin>
                                         <Insets right="5.0" />
                                     </HBox.margin>
                                 </Label>
-                                <TextField fx:id="loginField">
+                                <TextField fx:id="loginField" prefHeight="32.0" prefWidth="170.0">
                                     <HBox.margin>
                                         <Insets left="5.0" />
                                     </HBox.margin>
@@ -73,26 +76,35 @@
                         </HBox>
                         <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="20.0">
                             <children>
-                                <Label prefWidth="48.0" text="Пароль">
+                                <Label prefWidth="55.0" text="Пароль">
                                     <HBox.margin>
                                         <Insets right="5.0" />
                                     </HBox.margin>
                                 </Label>
-                                <PasswordField fx:id="passwordField" />
+                                <PasswordField fx:id="passwordField" prefWidth="170.0" />
                             </children>
                             <VBox.margin>
                                 <Insets bottom="10.0" />
                             </VBox.margin>
                         </HBox>
-                        <Button mnemonicParsing="false" onAction="#handleLogin" prefHeight="30.0" prefWidth="100.0" styleClass="login-button" text="Вход">
-                            <VBox.margin>
-                                <Insets top="25.0" />
-                            </VBox.margin>
+                  <VBox alignment="CENTER" prefHeight="86.0" prefWidth="285.0" spacing="10.0">
+                     <children>
+                              <Button mnemonicParsing="false" onAction="#handleLogin" prefHeight="30.0" prefWidth="150.0" styleClass="login-button" text="Вход">
+                                  <VBox.margin>
+                                      <Insets bottom="10.0" top="5.0" />
+                                  </VBox.margin>
+                              </Button>
+                        <Button mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0" prefWidth="150.0" styleClass="login-button" text="Регистрация">
+                           <VBox.margin>
+                              <Insets bottom="5.0" />
+                           </VBox.margin>
                         </Button>
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="5.0" top="15.0" />
+                     </VBox.margin>
+                  </VBox>
                     </children>
-                    <padding>
-                        <Insets bottom="5.0" right="5.0" top="5.0" />
-                    </padding>
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </HBox.margin>

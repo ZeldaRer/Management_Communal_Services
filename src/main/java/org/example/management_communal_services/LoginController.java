@@ -27,22 +27,17 @@ public class LoginController {
         String login = loginField.getText();
         String password = passwordField.getText();
 
-        if (login.isEmpty() || password.isEmpty()) {
-            showError("Заполните все поля!");
-            return;
-        }
+        // Проверяем логин и пароль, получаем ID
+        int ownerId = authenticateUser(login, password);
 
-        // Проверяем логин и пароль, получаем ID и имя
-        OwnerData ownerData = authenticateUser(login, password);
-
-        if (ownerData != null) {
+        if (ownerId > 0) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("owner.fxml"));
                 Parent root = loader.load();
 
-                // Передаем данные владельца в контроллер
+                // ПЕРЕДАЁМ ID ВЛАДЕЛЬЦА!
                 OwnerController ownerController = loader.getController();
-                ownerController.setCurrentOwner(ownerData.getId(), ownerData.getFullName());
+                ownerController.setCurrentOwner(ownerId, login);
 
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.setScene(new Scene(root));
@@ -51,15 +46,37 @@ public class LoginController {
 
             } catch (IOException e) {
                 e.printStackTrace();
-                showError("Ошибка при загрузке кабинета: " + e.getMessage());
             }
         } else {
-            showError("Неверный логин или пароль!");
+            // Ошибка авторизации
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ошибка");
+            alert.setContentText("Неверный логин или пароль");
+            alert.showAndWait();
         }
     }
 
-    private OwnerData authenticateUser(String login, String password) {
-        String sql = "SELECT id, full_name FROM Owners WHERE login = ? AND password = ?";
+    @FXML
+    private void handleRegister() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("registration.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) loginField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Регистрация собственника");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Ошибка при открытии окна регистрации");
+        }
+    }
+
+
+    // Метод для проверки логина/пароля и получения ID
+    private int authenticateUser(String login, String password) {
+        String sql = "SELECT id FROM Owners WHERE login = ? AND password = ?";
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -69,15 +86,12 @@ public class LoginController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                int id = rs.getInt("id");
-                String fullName = rs.getString("full_name");
-                return new OwnerData(id, fullName);
+                return rs.getInt("id");  // Возвращаем ID
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return 0;  // Ошибка
     }
 
     // Вспомогательный класс для хранения данных владельца

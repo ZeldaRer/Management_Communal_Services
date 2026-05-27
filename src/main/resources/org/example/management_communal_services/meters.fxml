@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.MetersController">
    <children>
       <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
@@ -29,6 +29,9 @@
                            <font>
                               <Font size="18.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets bottom="10.0" />
+                           </HBox.margin>
                         </Label>
                      </children>
                   </HBox>
@@ -39,12 +42,12 @@
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefWidth="125.0" text="Х">
+                        <Label fx:id="lblLastElectricity" alignment="CENTER" prefWidth="125.0" text="0">
                            <font>
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                        <Label fx:id="lblLastElectricityDate" alignment="CENTER_RIGHT" prefHeight="15.0" prefWidth="150.0" text="-">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -58,12 +61,12 @@
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefWidth="125.0" text="Х">
+                        <Label fx:id="lblLastHotWater" alignment="CENTER" prefWidth="125.0" text="0">
                            <font>
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                        <Label fx:id="lblLastHotWaterDate" alignment="CENTER_RIGHT" prefHeight="15.0" prefWidth="150.0" text="-">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -77,12 +80,12 @@
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefWidth="125.0" text="Х">
+                        <Label fx:id="lblLastColdWater" alignment="CENTER" prefWidth="125.0" text="0">
                            <font>
                               <Font size="18.0" />
                            </font>
                         </Label>
-                        <Label prefHeight="15.0" prefWidth="150.0" text="*Дата*">
+                        <Label fx:id="lblLastColdWaterDate" alignment="CENTER_RIGHT" prefHeight="15.0" prefWidth="150.0" text="-">
                            <font>
                               <Font size="18.0" />
                            </font>
@@ -94,7 +97,7 @@
                   <Insets top="5.0" />
                </VBox.margin>
             </VBox>
-            <Label text="Введите показания счётчиков за *текущую дату*">
+            <Label fx:id="lblCurrentDate" text="Введите показания счётчиков за текущую дату">
                <font>
                   <Font size="24.0" />
                </font>
@@ -109,7 +112,7 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0">
+                  <TextField fx:id="tfElectricity" prefWidth="300.0">
                      <font>
                         <Font size="18.0" />
                      </font>
@@ -123,7 +126,7 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0">
+                  <TextField fx:id="tfHotWater" prefWidth="300.0">
                      <font>
                         <Font size="18.0" />
                      </font>
@@ -137,7 +140,7 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0">
+                  <TextField fx:id="tfColdWater" prefWidth="300.0">
                      <font>
                         <Font size="18.0" />
                      </font>
@@ -149,7 +152,7 @@
                   <Insets bottom="5.0" top="10.0" />
                </VBox.margin>
                <children>
-                  <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" text="Отправить">
+                  <Button mnemonicParsing="false" onAction="#handleSubmit" prefHeight="45.0" prefWidth="200.0" text="Отправить">
                      <font>
                         <Font size="16.0" />
                      </font>

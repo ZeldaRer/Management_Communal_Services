@@ -106,4 +106,22 @@ public class HistoryController {
             e.printStackTrace();
         }
     }
+
+    // Проверка и обновление просроченных заявок (старше 10 дней)
+    private void checkExpiredApplications() {
+        String sql = "UPDATE Applications SET status = 'Просрочено' " +
+                "WHERE status = 'На рассмотрении' AND created_at < date('now', '-10 days')";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            int updated = pstmt.executeUpdate();
+            if (updated > 0) {
+                System.out.println("Обновлено просроченных заявок: " + updated);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

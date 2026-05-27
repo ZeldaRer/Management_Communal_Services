@@ -2,17 +2,18 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.effect.MotionBlur?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.ProfileController">
    <children>
-      <VBox alignment="CENTER" maxHeight="Infinity" maxWidth="Infinity" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+      <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
-            <VBox alignment="CENTER" prefHeight="178.0" prefWidth="710.0" spacing="5.0">
+            <VBox alignment="CENTER" spacing="5.0">
                <children>
                   <Label text="Добро пожаловать!">
                      <font>
@@ -38,7 +39,7 @@
                         <Insets left="15.0" right="15.0" />
                      </VBox.margin>
                   </Label>
-                  <Label layoutX="25.0" layoutY="110.0" text="г. Екатеринбург, ул. Раскольникова, д. 213.">
+                  <Label text="г. Екатеринбург, ул. Раскольникова, д. 213.">
                      <font>
                         <Font size="20.0" />
                      </font>
@@ -56,104 +57,119 @@
                   </Label>
                </children>
                <VBox.margin>
-                  <Insets bottom="5.0" />
+                  <Insets bottom="10.0" />
                </VBox.margin>
             </VBox>
-            <VBox alignment="CENTER" prefHeight="120.0" prefWidth="710.0">
+            <VBox alignment="CENTER">
                <children>
-                  <Line endX="690.864501953125" endY="1.628455400466919" strokeWidth="5.0" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets bottom="15.0" top="15.0" />
-                     </VBox.margin>
-                  </Line>
-                  <Label text=" Х руб.">
-                     <font>
-                        <Font size="26.0" />
-                     </font>
+                  <!-- Separator автоматически растягивается -->
+                  <!-- Верхняя линия -->
+                  <Separator maxWidth="Infinity" styleClass="separator-line">
+                     <effect>
+                        <MotionBlur />
+                     </effect></Separator>
+
+                  <Label fx:id="lblAmount" text="X руб.">
+                     <font><Font size="26.0" /></font>
+                     <VBox.margin><Insets bottom="5.0" top="5.0" /></VBox.margin>
+                  </Label>
+                  <Label fx:id="lblPeriod" text="Счёт за *прошедший месяц*">
+                     <font><Font size="20.0" /></font>
                      <VBox.margin>
                         <Insets bottom="5.0" />
                      </VBox.margin>
                   </Label>
-                  <Label text="Счёт за *прошедший месяц*">
-                     <font>
-                        <Font size="20.0" />
-                     </font>
-                  </Label>
-                  <Line endX="690.864501953125" endY="1.628455400466919" strokeWidth="5.0" VBox.vgrow="ALWAYS">
-                     <VBox.margin>
-                        <Insets top="15.0" />
-                     </VBox.margin>
-                  </Line>
+
+                  <!-- Нижняя линия -->
+                  <Separator maxWidth="Infinity" styleClass="separator-line">
+                     <effect>
+                        <MotionBlur />
+                     </effect></Separator>
                </children>
+               <VBox.margin>
+                  <Insets bottom="10.0" top="10.0" />
+               </VBox.margin>
             </VBox>
-            <VBox prefHeight="150.0" prefWidth="710.0">
+            <VBox>
                <children>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <HBox prefHeight="40.0">
                      <children>
-                        <Label fx:id="lblFullName" text="Фамилия Имя Отчество:">
+                        <Label text="Фамилия Имя Отчество:">
                            <font>
                               <Font size="20.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
                         </Label>
-                        <Label fx:id="lblFullName1" text="*ФИО*">
+                        <Label fx:id="lblFullName" text="*ФИО*">
                            <font>
                               <Font size="20.0" />
                            </font>
                         </Label>
                      </children>
                      <VBox.margin>
-                        <Insets left="15.0" top="10.0" />
+                        <Insets left="15.0" top="5.0" />
                      </VBox.margin>
                   </HBox>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <HBox prefHeight="40.0">
                      <children>
-                        <Label fx:id="lblAccountNumber" text="Счёт:">
+                        <Label text="Счёт:">
                            <font>
                               <Font size="20.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
                         </Label>
-                        <Label fx:id="lblFullName11" text="*ЛС*">
+                        <Label fx:id="lblAccountNumber" text="*ЛС*">
                            <font>
                               <Font size="20.0" />
                            </font>
                         </Label>
                      </children>
                      <VBox.margin>
-                        <Insets left="15.0" top="10.0" />
+                        <Insets left="15.0" top="5.0" />
                      </VBox.margin>
                   </HBox>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <HBox prefHeight="40.0">
                      <children>
-                        <Label fx:id="lblAddress" text="Адрес:">
+                        <Label text="Адрес:">
                            <font>
                               <Font size="20.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
                         </Label>
-                        <Label fx:id="lblFullName12" text="*адрес*">
+                        <Label fx:id="lblAddress" text="*адрес*">
                            <font>
                               <Font size="20.0" />
                            </font>
                         </Label>
                      </children>
                      <VBox.margin>
-                        <Insets left="15.0" top="10.0" />
+                        <Insets left="15.0" top="5.0" />
                      </VBox.margin>
                   </HBox>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <HBox prefHeight="40.0">
                      <children>
-                        <Label fx:id="lblAddress1" text="Размер квартиры (кв.м):">
+                        <Label text="Размер квартиры (кв.м):">
                            <font>
                               <Font size="20.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets right="10.0" />
+                           </HBox.margin>
                         </Label>
-                        <Label fx:id="lblFullName13" text="*кв.м*">
+                        <Label fx:id="lblArea" text="*кв.м*">
                            <font>
                               <Font size="20.0" />
                            </font>
                         </Label>
                      </children>
                      <VBox.margin>
-                        <Insets left="15.0" top="10.0" />
+                        <Insets left="15.0" top="5.0" />
                      </VBox.margin>
                   </HBox>
                </children>

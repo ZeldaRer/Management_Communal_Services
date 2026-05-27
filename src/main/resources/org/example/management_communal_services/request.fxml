@@ -2,14 +2,16 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="550.0" prefWidth="730.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.RequestController">
    <children>
       <VBox alignment="CENTER" layoutX="224.0" layoutY="175.0" prefHeight="550.0" prefWidth="730.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
@@ -28,7 +30,7 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0" promptText="Введите ваш номер телефона">
+                  <TextField fx:id="tfPhone" prefWidth="360.0" promptText="Введите ваш номер телефона">
                      <font>
                         <Font size="16.0" />
                      </font>
@@ -45,11 +47,9 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0" promptText="Введите ваш номер телефона">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </TextField>
+                  <ComboBox fx:id="cbCategory" prefWidth="360.0" promptText="Выберите категорию">
+
+                  </ComboBox>
                </children>
                <VBox.margin>
                   <Insets top="15.0" />
@@ -62,11 +62,9 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField prefWidth="300.0" promptText="Введите ваш номер телефона">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </TextField>
+                  <ComboBox fx:id="cbService" prefWidth="360.0" promptText="Сначала выберите категорию">
+
+                  </ComboBox>
                </children>
                <VBox.margin>
                   <Insets top="15.0" />
@@ -79,14 +77,11 @@
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <TextField alignment="TOP_LEFT" prefHeight="154.0" prefWidth="300.0" promptText="Опишите желаемую услугу">
+                  <TextArea fx:id="taDescription" prefHeight="154.0" prefWidth="360.0" promptText="Опишите желаемую услугу">
                      <font>
                         <Font size="16.0" />
                      </font>
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
-                  </TextField>
+                  </TextArea>
                </children>
                <VBox.margin>
                   <Insets bottom="15.0" top="15.0" />
@@ -105,7 +100,7 @@
                   <Insets bottom="15.0" top="15.0" />
                </VBox.margin>
                <children>
-                  <Button mnemonicParsing="false" prefHeight="60.0" prefWidth="200.0" text="Отправить">
+                  <Button mnemonicParsing="false" onAction="#handleSubmit" prefHeight="60.0" prefWidth="200.0" text="Отправить">
                      <font>
                         <Font size="16.0" />
                      </font>
