@@ -34,10 +34,6 @@ public class ServicesController {
         serviceCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
         servicePriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
 
-        // УБРАНЫ эти строки:
-        // servicesTable.setMaxWidth(Double.MAX_VALUE);
-        // servicesTable.setMaxHeight(Double.MAX_VALUE);
-
         // Растягиваем колонки
         servicesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 

@@ -267,3 +267,8 @@
     -fx-text-fill: -text-white;
     -fx-font-weight: bold;
 }
+
+.amount-label {
+    -fx-alignment: CENTER;
+    -fx-font-size: 18px;
+}

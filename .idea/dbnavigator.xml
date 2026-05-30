@@ -36,7 +36,17 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf">
-      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[select * from "Owners"]]></console>
+      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[-- Начисления за май 2026 для owner_id = 1
+INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year, is_paid)
+VALUES 
+(1, 1, 45.7, 40.25, 1839.43, 5, 2026, 0),   -- Содержание жилья
+(1, 3, 12.0, 51.77, 621.24, 5, 2026, 0),    -- ХВС
+(1, 4, 7.0, 48.46, 339.22, 5, 2026, 0),     -- ГВС
+(1, 5, 0.455, 2805.94, 1276.70, 5, 2026, 0),-- ГВС (тепловая энергия)
+(1, 6, 150.0, 6.33, 949.50, 5, 2026, 0),    -- Электричество
+(1, 2, 19.0, 34.08, 647.52, 5, 2026, 0),    -- Водоотведение
+(1, 8, 30.6, 7.43, 227.36, 5, 2026, 0),     -- Газ
+(1, 9, 0.64, 776.86, 497.19, 5, 2026, 0);   -- Обращение с ТКО]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -44,7 +54,7 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Applications" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Payments" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Owners" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
     </open-files>
@@ -60,6 +70,7 @@
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.Services" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.Charges" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.sqlite_sequence" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.Payments" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.MeterReadings" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.Tariffs" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" dataset="main.Applications" active-filter-id="EMPTY_FILTER" />

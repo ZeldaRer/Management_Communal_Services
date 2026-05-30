@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane stylesheets="@style.css" prefHeight="550.0" prefWidth="730.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.OwnerDetailsController">
+<AnchorPane prefHeight="550.0" prefWidth="800.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.OwnerDetailsController">
    <children>
       <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
          <children>
@@ -31,51 +31,59 @@
                         <Insets bottom="15.0" top="10.0" />
                      </VBox.margin>
                   </Label>
-                  <HBox alignment="CENTER" maxWidth="700.0" minWidth="700.0" prefHeight="128.0" prefWidth="700.0">
+                  <HBox alignment="CENTER" maxWidth="769.0" minWidth="700.0" prefHeight="128.0" prefWidth="769.0">
                      <children>
                         <VBox alignment="TOP_CENTER" prefHeight="150.0" prefWidth="607.0">
                            <children>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Фамилия Имя Отчество" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Фамилия Имя Отчество" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfFullName" editable="false" prefWidth="160.0" promptText="Иванов Иван Иванович">
+                                    <TextField fx:id="tfFullName" editable="false" prefWidth="250.0" promptText="Иванов Иван Иванович">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Номер счёта" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Номер счёта" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfAccountNumber" editable="false" prefWidth="160.0" promptText="001122334 (9 цифр)">
+                                    <TextField fx:id="tfAccountNumber" editable="false" prefWidth="250.0" promptText="001122334 (9 цифр)">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                                  <VBox.margin><Insets /></VBox.margin>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Номер телефона" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Номер телефона" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfPhone" editable="false" prefWidth="160.0" promptText="88005553535">
+                                    <TextField fx:id="tfPhone" editable="false" prefWidth="250.0" promptText="88005553535">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Email" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Email" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfEmail" editable="false" prefWidth="160.0" promptText="ivanov@gmail.com">
+                                    <TextField fx:id="tfEmail" editable="false" prefWidth="250.0" promptText="ivanov@gmail.com">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
@@ -85,47 +93,55 @@
                         </VBox>
                         <VBox alignment="TOP_CENTER" prefHeight="150.0" prefWidth="607.0">
                            <children>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Улица / Проспект" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Улица / Проспект" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfStreet" editable="false" prefWidth="160.0" promptText="ул. Ленина / пр. Ленина">
+                                    <TextField fx:id="tfStreet" editable="false" prefWidth="250.0" promptText="ул. Ленина / пр. Ленина">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                                  <VBox.margin><Insets /></VBox.margin>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Номер дома" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Номер дома" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfBuilding" editable="false" prefWidth="160.0" promptText="12">
+                                    <TextField fx:id="tfBuilding" editable="false" prefWidth="250.0" promptText="12">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Номер квартиры" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Номер квартиры" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfApartment" editable="false" prefWidth="160.0" promptText="12">
+                                    <TextField fx:id="tfApartment" editable="false" prefWidth="250.0" promptText="12">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="5.0">
+                              <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0">
                                  <children>
-                                    <Label contentDisplay="CENTER" prefWidth="150.0" text="Размер квартиры (кв.м)" textAlignment="CENTER">
-                                       <font><Font size="18.0" /></font>
-                                       <HBox.margin><Insets right="5.0" /></HBox.margin>
+                                    <Label contentDisplay="CENTER" prefWidth="315.0" text="Площадь квартиры (кв.м)" textAlignment="CENTER">
+                                       <HBox.margin><Insets /></HBox.margin>
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
                                     </Label>
-                                    <TextField fx:id="tfArea" editable="false" prefWidth="160.0" promptText="30.3 (Через точку!)">
+                                    <TextField fx:id="tfArea" editable="false" prefWidth="250.0" promptText="30.3 (Через точку!)">
                                        <HBox.margin><Insets /></HBox.margin>
                                     </TextField>
                                  </children>
@@ -167,8 +183,10 @@
                   <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="20.0">
                      <children>
                         <Label contentDisplay="CENTER" prefWidth="150.0" text="Логин" textAlignment="CENTER">
-                           <font><Font size="18.0" /></font>
                            <HBox.margin><Insets right="5.0" /></HBox.margin>
+                           <font>
+                              <Font size="18.0" />
+                           </font>
                         </Label>
                         <TextField fx:id="tfLogin" editable="false">
                            <HBox.margin><Insets left="5.0" /></HBox.margin>
@@ -178,8 +196,10 @@
                   <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="20.0">
                      <children>
                         <Label contentDisplay="CENTER" prefWidth="150.0" text="Старый пароль" textAlignment="CENTER">
-                           <font><Font size="18.0" /></font>
                            <HBox.margin><Insets right="5.0" /></HBox.margin>
+                           <font>
+                              <Font size="18.0" />
+                           </font>
                         </Label>
                         <PasswordField fx:id="pfOldPassword" editable="false">
                            <HBox.margin><Insets left="5.0" /></HBox.margin>
@@ -189,8 +209,10 @@
                   <HBox alignment="CENTER" prefHeight="30.0" prefWidth="200.0" spacing="20.0">
                      <children>
                         <Label contentDisplay="CENTER" prefWidth="150.0" text="Новый пароль" textAlignment="CENTER">
-                           <font><Font size="18.0" /></font>
                            <HBox.margin><Insets right="5.0" /></HBox.margin>
+                           <font>
+                              <Font size="18.0" />
+                           </font>
                         </Label>
                         <PasswordField fx:id="pfNewPassword" editable="false">
                            <HBox.margin><Insets left="5.0" /></HBox.margin>

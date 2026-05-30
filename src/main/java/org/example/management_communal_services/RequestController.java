@@ -12,10 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-/**
- * Контроллер для окна подачи заявки на услугу
- * Обеспечивает выбор категории и услуги из справочника
- */
+// Контроллер для окна подачи заявки на услугу
+// Обеспечивает выбор категории и услуги из справочника
 public class RequestController {
 
     @FXML
@@ -34,9 +32,7 @@ public class RequestController {
     private ObservableList<String> categories = FXCollections.observableArrayList();
     private ObservableList<ServiceItem> services = FXCollections.observableArrayList();
 
-    /**
-     * Внутренний класс для хранения услуги с ID
-     */
+    // Внутренний класс для хранения услуги с ID
     private class ServiceItem {
         private int id;
         private String name;
@@ -58,16 +54,12 @@ public class RequestController {
         }
     }
 
-    /**
-     * Установка ID текущего владельца
-     */
+    // Установка ID текущего владельца
     public void setCurrentOwnerId(int ownerId) {
         this.currentOwnerId = ownerId;
     }
 
-    /**
-     * Инициализация контроллера: загрузка категорий
-     */
+    // Инициализация контроллера: загрузка категорий
     @FXML
     public void initialize() {
         loadCategories();
@@ -80,9 +72,7 @@ public class RequestController {
         });
     }
 
-    /**
-     * Загрузка уникальных категорий из таблицы Services
-     */
+    // Загрузка уникальных категорий из таблицы Services
     private void loadCategories() {
         String sql = "SELECT DISTINCT category FROM Services ORDER BY category";
 
@@ -101,9 +91,7 @@ public class RequestController {
         }
     }
 
-    /**
-     * Загрузка услуг для выбранной категории
-     */
+    //  Загрузка услуг для выбранной категории
     private void loadServicesByCategory(String category) {
         services.clear();
         String sql = "SELECT id, name, category FROM Services WHERE category = ? ORDER BY name";
@@ -120,8 +108,16 @@ public class RequestController {
                 String cat = rs.getString("category");
                 services.add(new ServiceItem(id, name, cat));
             }
+
             cbService.setItems(services);
             cbService.setDisable(false);
+
+            // === ИСПРАВЛЕНИЕ БАГА С ВЫСОТОЙ СПИСКА ===
+            // Сбрасываем выбор, чтобы не "залипало"
+            cbService.getSelectionModel().clearSelection();
+            // Принудительно устанавливаем количество видимых строк (например, 5)
+            // Это заставит список всегда раскрываться нормально
+            cbService.setVisibleRowCount(5);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -129,16 +125,27 @@ public class RequestController {
         }
     }
 
-    /**
-     * Обработчик кнопки "Отправить"
-     */
+    //  Обработчик кнопки "Отправить"
     @FXML
     private void handleSubmit() {
-        // Валидация полей
-        if (tfPhone.getText().trim().isEmpty()) {
+        // 1. Строгая проверка телефона (как в регистрации)
+        String phoneInput = tfPhone.getText().trim();
+        if (phoneInput.isEmpty()) {
             showError("Введите номер телефона");
             return;
         }
+
+        // Очищаем от всего кроме цифр
+        String digits = phoneInput.replaceAll("\\D", "");
+
+        // Проверка формата: 11 цифр, начинается с 8 или 7
+        if (digits.length() != 11 || (!digits.startsWith("8") && !digits.startsWith("7"))) {
+            showError("Введите корректный номер телефона (например: 88005553535)");
+            tfPhone.requestFocus();
+            return;
+        }
+
+        // 2. Остальные проверки
         if (cbCategory.getValue() == null) {
             showError("Выберите категорию услуги");
             return;
@@ -152,17 +159,13 @@ public class RequestController {
             return;
         }
 
-        // Получаем выбранную услугу
+        // Сохраняем заявку (передаем проверенный телефон)
         ServiceItem selectedService = cbService.getValue();
-
-        // Сохраняем заявку
-        saveApplication(selectedService.getId());
+        saveApplication(selectedService.getId(), phoneInput);
     }
 
-    /**
-     * Сохранение заявки в базу данных
-     */
-    private void saveApplication(int serviceId) {
+    // Обновленный метод сохранения (добавлен аргумент phone)
+    private void saveApplication(int serviceId, String phone) {
         String sql = "INSERT INTO Applications (owner_id, service_id, description, phone, status, created_at) " +
                 "VALUES (?, ?, ?, ?, 'На рассмотрении', ?)";
 
@@ -172,7 +175,7 @@ public class RequestController {
             pstmt.setInt(1, currentOwnerId);
             pstmt.setInt(2, serviceId);
             pstmt.setString(3, taDescription.getText().trim());
-            pstmt.setString(4, tfPhone.getText().trim());
+            pstmt.setString(4, phone); // Используем проверенный номер
             pstmt.setString(5, LocalDate.now().toString());
 
             int rowsAffected = pstmt.executeUpdate();
@@ -188,9 +191,7 @@ public class RequestController {
         }
     }
 
-    /**
-     * Очистка полей формы
-     */
+    // Очистка полей формы
     private void clearFields() {
         tfPhone.clear();
         cbCategory.setValue(null);
@@ -199,9 +200,7 @@ public class RequestController {
         taDescription.clear();
     }
 
-    /**
-     * Показ сообщения об ошибке
-     */
+    // Показ сообщения об ошибке
     private void showError(String message) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Ошибка");
@@ -210,9 +209,7 @@ public class RequestController {
         alert.showAndWait();
     }
 
-    /**
-     * Показ сообщения об успехе
-     */
+    // Показ сообщения об успехе
     private void showSuccess(String message) {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Успех");

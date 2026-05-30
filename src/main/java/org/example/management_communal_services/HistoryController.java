@@ -62,6 +62,9 @@ public class HistoryController {
     private void loadApplications() {
         if (currentOwnerId == 0) return;
 
+        // Сначала проверяем просроченные заявки
+        checkExpiredApplications();
+
         // SQL с JOIN для получения категории и названия услуги
         // Сортировка от старых к новым (ASC), нумерация через переменную
         String sql = """

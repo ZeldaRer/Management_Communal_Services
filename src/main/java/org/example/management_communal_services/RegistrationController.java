@@ -143,6 +143,14 @@ public class RegistrationController {
             return false;
         }
 
+        // Проверка улицы (должна начинаться с "ул." или "пр.")
+        String street = tfStreet.getText().trim();
+        if (!street.toLowerCase().startsWith("ул.") && !street.toLowerCase().startsWith("пр.")) {
+            showError("Улица, или Проспект должны начинаться с 'ул.' или 'пр.' (например: ул. Ленина)");
+            tfStreet.requestFocus();
+            return false;
+        }
+
         if (tfBuilding.getText().trim().isEmpty()) {
             showError("Введите номер дома");
             tfBuilding.requestFocus();

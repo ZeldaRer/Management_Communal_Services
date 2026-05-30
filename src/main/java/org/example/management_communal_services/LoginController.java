@@ -27,6 +27,12 @@ public class LoginController {
         String login = loginField.getText();
         String password = passwordField.getText();
 
+        // Проверка на пустые поля
+        if (login.trim().isEmpty() || password.trim().isEmpty()) {
+            showError("Введите логин и пароль");
+            return;
+        }
+
         // Проверяем логин и пароль, получаем ID
         int ownerId = authenticateUser(login, password);
 
@@ -46,6 +52,7 @@ public class LoginController {
 
             } catch (IOException e) {
                 e.printStackTrace();
+                showError("Ошибка при загрузке окна кабинета");
             }
         } else {
             // Ошибка авторизации
@@ -115,7 +122,7 @@ public class LoginController {
 
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Ошибка авторизации");
+        alert.setTitle("Ошибка");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

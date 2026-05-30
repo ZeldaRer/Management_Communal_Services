@@ -157,7 +157,7 @@
                         <Font size="16.0" />
                      </font>
                   </Button>
-                  <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" text="Оформить квитанцию">
+                  <Button mnemonicParsing="false" onAction="#handleGenerateReceipt" prefHeight="45.0" prefWidth="200.0" text="Оформить квитанцию">
                      <font>
                         <Font size="16.0" />
                      </font>
