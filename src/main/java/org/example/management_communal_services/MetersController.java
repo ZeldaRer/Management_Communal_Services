@@ -487,8 +487,8 @@ public class MetersController {
 
             // Получаем все тарифы
             String tariffsSql = "SELECT id, service_name, price, normative FROM Tariffs WHERE is_active = 1";
-            String insertSql = "INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year, is_paid) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
+            String insertSql = "INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement tariffStmt = conn.prepareStatement(tariffsSql);
                  ResultSet tariffRs = tariffStmt.executeQuery()) {

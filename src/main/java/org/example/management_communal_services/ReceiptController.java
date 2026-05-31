@@ -1,6 +1,7 @@
 package org.example.management_communal_services;
 
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -308,35 +309,50 @@ public class ReceiptController {
 
     // Итоговая сумма теперь включает housing services (через totalAmount)
     private void calculateTotal() {
-        String debtSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? AND is_paid = 0 AND (month < ? OR (month = ? AND year < ?))";
+        // Считаем задолженность за прошлые периоды
+        String debtSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? AND is_paid = 0 " +
+                "AND (month < ? OR (month = ? AND year < ?))";
+
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(debtSql)) {
             pstmt.setInt(1, currentOwnerId);
             pstmt.setInt(2, currentMonth);
             pstmt.setInt(3, currentMonth);
             pstmt.setInt(4, currentYear);
+
             ResultSet rs = pstmt.executeQuery();
             double debt = 0.0;
-            if (rs.next()) debt = rs.getDouble(1);
+            if (rs.next()) {
+                debt = rs.getDouble(1);
+            }
 
+            // Считаем платежи
             String paymentsSql = "SELECT SUM(amount) FROM Payments WHERE owner_id = ?";
             try (PreparedStatement payStmt = conn.prepareStatement(paymentsSql)) {
                 payStmt.setInt(1, currentOwnerId);
                 ResultSet payRs = payStmt.executeQuery();
                 double payments = 0.0;
-                if (payRs.next()) payments = payRs.getDouble(1);
+                if (payRs.next()) {
+                    payments = payRs.getDouble(1);
+                }
 
+                // Рассчитываем баланс
                 double balance = payments - debt;
-                // totalAmount уже включает и коммунальные, и жилищные услуги (из loadHousingServices)
-                double totalToPay = totalAmount + Math.max(0, -balance);
+
+                // Итоговая сумма УЖЕ включает жилищные услуги (из totalAmount)
+                // Поэтому НЕ добавляем housingServicesTotal повторно!
+                double totalToPay = totalAmount;
 
                 if (balance > 0) {
+                    // Переплата - уменьшаем сумму
                     lblDebt.setText(String.format("Переплата: %.2f руб.", balance));
                     lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: green;");
                     totalToPay = Math.max(0, totalToPay - balance);
                 } else if (balance < 0) {
+                    // Долг - увеличиваем сумму
                     lblDebt.setText(String.format("Задолженность: %.2f руб.", Math.abs(balance)));
                     lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: red;");
+                    totalToPay += Math.abs(balance);
                 } else {
                     lblDebt.setText("Задолженность отсутствует");
                     lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: black;");
@@ -390,7 +406,7 @@ public class ReceiptController {
         headerRow.getCell(1).setText("Ед.изм.");
         headerRow.getCell(2).setText("Показания");
         headerRow.getCell(3).setText("Объём");
-        headerRow.getCell(4).setText("Тариф");
+        headerRow.getCell(4).setText("Тариф, руб.");
         headerRow.getCell(5).setText("Норматив");
         headerRow.getCell(6).setText("Расчётный месяц");
         headerRow.getCell(7).setText("Сумма, руб.");

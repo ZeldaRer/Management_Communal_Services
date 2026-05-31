@@ -167,8 +167,8 @@ public class ChargesGenerator {
                 amount = volume * tariffPrice;
 
                 // Вставляем начисление
-                String insertSql = "INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year, is_paid) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
+                String insertSql = "INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                     insertStmt.setInt(1, ownerId);
