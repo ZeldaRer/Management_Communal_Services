@@ -138,29 +138,67 @@ public class ReceiptController {
 
     // Форматирование периода с указанием дат
     private void formatPeriodWithDates() {
-        // Начало периода: 25 число предыдущего месяца
-        YearMonth previousMonth = YearMonth.of(currentYear, currentMonth).minusMonths(1);
-        int startDay = 25;
-        int daysInPreviousMonth = previousMonth.lengthOfMonth();
+        // Получаем дату ПРЕДЫДУЩИХ показаний
+        String lastReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
+                "WHERE owner_id = ? AND (year < ? OR (year = ? AND month < ?)) " +
+                "ORDER BY year DESC, month DESC, reading_date DESC LIMIT 1";
 
-        // Если в предыдущем месяце меньше 25 дней, берём последний день
-        if (startDay > daysInPreviousMonth) {
-            startDay = daysInPreviousMonth;
+        LocalDate startDate = null;
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(lastReadingsDateSql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            pstmt.setInt(2, currentYear);
+            pstmt.setInt(3, currentYear);
+            pstmt.setInt(4, currentMonth);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                startDate = LocalDate.parse(rs.getString("reading_date"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        LocalDate startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
-
-        // Конец периода: текущая дата или последнее число текущего месяца
-        LocalDate today = LocalDate.now();
-        YearMonth currentYM = YearMonth.of(currentYear, currentMonth);
-        int endDay = Math.min(today.getDayOfMonth(), currentYM.lengthOfMonth());
-
-        // Если квитанция за прошлый месяц, берём последнее число месяца
-        if (today.getMonthValue() != currentMonth || today.getYear() != currentYear) {
-            endDay = currentYM.lengthOfMonth();
+        // Если нет предыдущих показаний, берём 25 число предыдущего месяца
+        if (startDate == null) {
+            YearMonth previousMonth = YearMonth.of(currentYear, currentMonth).minusMonths(1);
+            int startDay = 25;
+            int daysInPreviousMonth = previousMonth.lengthOfMonth();
+            if (startDay > daysInPreviousMonth) {
+                startDay = daysInPreviousMonth;
+            }
+            startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
         }
 
-        LocalDate endDate = LocalDate.of(currentYear, currentMonth, endDay);
+        // Получаем дату ТЕКУЩИХ показаний
+        String currentReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
+                "WHERE owner_id = ? AND month = ? AND year = ? " +
+                "ORDER BY reading_date DESC LIMIT 1";
+
+        LocalDate endDate = null;
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(currentReadingsDateSql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            pstmt.setInt(2, currentMonth);
+            pstmt.setInt(3, currentYear);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                endDate = LocalDate.parse(rs.getString("reading_date"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Если нет текущих показаний, берём последнее число месяца
+        if (endDate == null) {
+            YearMonth currentYM = YearMonth.of(currentYear, currentMonth);
+            endDate = LocalDate.of(currentYear, currentMonth, currentYM.lengthOfMonth());
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         String periodText = "Период оплаты: " + startDate.format(formatter) + " - " + endDate.format(formatter);
@@ -261,7 +299,7 @@ public class ReceiptController {
                         serviceName.toLowerCase().contains("electric")) {
                     isMeteredService = true;
                     if (hasCurrentReadings) {
-                        readings = String.format("%.0f", currElectricity);
+                        readings = String.format("%.3f", currElectricity);
                         if (hasLastReadings) {
                             consumption = currElectricity - lastElectricity;
                         } else {
@@ -273,7 +311,7 @@ public class ReceiptController {
                 else if (serviceName.contains("ГВС") && serviceName.contains("теплоноситель")) {
                     isMeteredService = true;
                     if (hasCurrentReadings) {
-                        readings = String.format("%.0f", currHotWater);
+                        readings = String.format("%.3f", currHotWater);
                         if (hasLastReadings) {
                             consumption = currHotWater - lastHotWater;
                         } else {
@@ -285,7 +323,7 @@ public class ReceiptController {
                 else if (serviceName.contains("ХВС")) {
                     isMeteredService = true;
                     if (hasCurrentReadings) {
-                        readings = String.format("%.0f", currColdWater);
+                        readings = String.format("%.3f", currColdWater);
                         if (hasLastReadings) {
                             consumption = currColdWater - lastColdWater;
                         } else {
@@ -463,7 +501,7 @@ public class ReceiptController {
         XWPFRun titleRun = titlePara.createRun();
         titleRun.setText("ЕДИНЫЙ ПЛАТЁЖНЫЙ ДОКУМЕНТ");
         titleRun.setBold(true);
-        titleRun.setFontSize(18);
+        titleRun.setFontSize(16);
 
         // Данные собственника
         addParagraph(document, lblAccountNumber.getText());
@@ -484,7 +522,7 @@ public class ReceiptController {
         headerRow.getCell(1).setText("Ед.изм.");
         headerRow.getCell(2).setText("Показания");
         headerRow.getCell(3).setText("Объём");
-        headerRow.getCell(4).setText("Тариф");
+        headerRow.getCell(4).setText("Тариф, руб.");
         headerRow.getCell(5).setText("Норматив");
         headerRow.getCell(6).setText("Расчётный месяц");
         headerRow.getCell(7).setText("Сумма, руб.");

@@ -15,53 +15,33 @@ import java.sql.SQLException;
 public class OwnerDetailsController {
 
     // Поля для ввода личных данных
-    @FXML
-    private TextField tfFullName;
+    @FXML private TextField tfFullName;
+    @FXML private TextField tfAccountNumber;
+    @FXML private TextField tfPhone;
+    @FXML private TextField tfEmail;
 
-    @FXML
-    private TextField tfAccountNumber;
-
-    @FXML
-    private TextField tfPhone;
-
-    @FXML
-    private TextField tfEmail;
-
-    @FXML
-    private TextField tfStreet;
-
-    @FXML
-    private TextField tfBuilding;
-
-    @FXML
-    private TextField tfApartment;
-
-    @FXML
-    private TextField tfArea;
+    // Поля адреса (заблокированы для редактирования)
+    @FXML private TextField tfStreet;
+    @FXML private TextField tfBuilding;
+    @FXML private TextField tfApartment;
+    @FXML private TextField tfArea;
 
     // Поля для работы с логином и паролем
-    @FXML
-    private TextField tfLogin;
-
-    @FXML
-    private PasswordField pfOldPassword;
-
-    @FXML
-    private PasswordField pfNewPassword;
+    @FXML private TextField tfLogin;
+    @FXML private PasswordField pfOldPassword;
+    @FXML private PasswordField pfNewPassword;
 
     // ID текущего владельца и флаг режима редактирования
     private int currentOwnerId;
     private boolean editMode = false;
 
     // Установка ID текущего владельца и загрузка данных
-    // Вызывается из OwnerController после загрузки FXML
     public void setCurrentOwnerId(int ownerId) {
         this.currentOwnerId = ownerId;
         loadOwnerData();
     }
 
     // Загрузка данных владельца из базы данных
-    // Заполняет все текстовые поля информацией из таблицы Owners
     private void loadOwnerData() {
         if (currentOwnerId == 0) return;
 
@@ -93,7 +73,6 @@ public class OwnerDetailsController {
     }
 
     // Кнопка "Редактировать" — включение режима редактирования
-    // Разблокирует поля для изменения личных данных
     @FXML
     private void handleEdit() {
         setFieldsEditable(true);
@@ -101,7 +80,6 @@ public class OwnerDetailsController {
     }
 
     // Кнопка "Подтвердить" — сохранение изменений
-    // Проверяет валидацию и обновляет данные в БД
     @FXML
     private void handleSave() {
         if (!editMode) {
@@ -118,7 +96,6 @@ public class OwnerDetailsController {
     }
 
     // Кнопка "Изменить" для пароля
-    // Разблокирует поля для ввода старого и нового пароля
     @FXML
     private void handleEditPassword() {
         pfOldPassword.setEditable(true);
@@ -126,7 +103,6 @@ public class OwnerDetailsController {
     }
 
     // Кнопка "Подтвердить" для пароля
-    // Проверяет старый пароль и обновляет на новый
     @FXML
     private void handleSavePassword() {
         if (pfOldPassword.getText().isEmpty() || pfNewPassword.getText().isEmpty()) {
@@ -143,65 +119,86 @@ public class OwnerDetailsController {
         }
     }
 
-    // Включение/отключение редактирования полей личных данных
-    // Не влияет на поля логина и пароля
+    // Включение/отключение редактирования полей
+    // Адресные поля остаются заблокированными всегда
     private void setFieldsEditable(boolean editable) {
         tfFullName.setEditable(editable);
         tfPhone.setEditable(editable);
         tfEmail.setEditable(editable);
-        tfStreet.setEditable(editable);
-        tfBuilding.setEditable(editable);
-        tfApartment.setEditable(editable);
-        tfArea.setEditable(editable);
+        // Адрес и площадь недоступны для изменения
     }
 
-    // Валидация заполненных полей
-    // Проверяет, что ФИО, телефон и email не пустые
+    // Валидация заполненных полей (аналогично регистрации)
     private boolean validateFields() {
+        // Проверка ФИО
         if (tfFullName.getText().trim().isEmpty()) {
             showError("Введите ФИО");
+            tfFullName.requestFocus();
             return false;
         }
-        if (tfPhone.getText().trim().isEmpty()) {
+
+        // Проверка телефона (как в регистрации)
+        String phone = tfPhone.getText().trim();
+        if (phone.isEmpty()) {
             showError("Введите номер телефона");
+            tfPhone.requestFocus();
             return false;
         }
-        if (tfEmail.getText().trim().isEmpty()) {
+        String digits = phone.replaceAll("\\D", "");
+        if (!digits.matches("(8|7|\\+7)\\d{10}")) {
+            showError("Введите корректный номер телефона (например: 88005553535)");
+            tfPhone.requestFocus();
+            return false;
+        }
+
+        // Проверка Email
+        String email = tfEmail.getText().trim();
+        if (email.isEmpty()) {
             showError("Введите email");
+            tfEmail.requestFocus();
             return false;
         }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            showError("Введите корректный email");
+            tfEmail.requestFocus();
+            return false;
+        }
+
         return true;
     }
 
     // Сохранение изменений в базу данных
-    // Обновляет поля в таблице Owners по ID владельца
+    // Адресные поля исключены из обновления
     private void saveChanges() {
-        String sql = "UPDATE Owners SET full_name = ?, phone = ?, email = ?, " +
-                "street = ?, building = ?, apartment_number = ?, area = ? " +
-                "WHERE id = ?";
+        String sql = "UPDATE Owners SET full_name = ?, phone = ?, email = ? WHERE id = ?";
 
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, tfFullName.getText().trim());
-            pstmt.setString(2, tfPhone.getText().trim());
-            pstmt.setString(3, tfEmail.getText().trim());
-            pstmt.setString(4, tfStreet.getText().trim());
-            pstmt.setString(5, tfBuilding.getText().trim());
-            pstmt.setString(6, tfApartment.getText().trim());
-            pstmt.setDouble(7, Double.parseDouble(tfArea.getText()));
-            pstmt.setInt(8, currentOwnerId);
+
+            // Нормализация телефона перед сохранением (приведение к +7...)
+            String phone = tfPhone.getText().trim();
+            String digits = phone.replaceAll("\\D", "");
+            if (digits.startsWith("8")) {
+                digits = "+7" + digits.substring(1);
+            } else if (digits.startsWith("7") && digits.length() == 11) {
+                digits = "+7" + digits.substring(1);
+            }
+            pstmt.setString(2, digits);
+
+            pstmt.setString(3, tfEmail.getText().trim().toLowerCase());
+            pstmt.setInt(4, currentOwnerId);
 
             pstmt.executeUpdate();
 
-        } catch (SQLException | NumberFormatException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             showError("Ошибка при сохранении данных");
         }
     }
 
     // Изменение пароля
-    // Проверяет старый пароль и обновляет на новый в БД
     private boolean changePassword() {
         String sql = "SELECT password FROM Owners WHERE id = ?";
         String updateSql = "UPDATE Owners SET password = ? WHERE id = ?";
@@ -232,7 +229,6 @@ public class OwnerDetailsController {
     }
 
     // Показ сообщения об ошибке
-    // Использует стандартный Alert с типом ERROR
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Ошибка");
@@ -241,7 +237,6 @@ public class OwnerDetailsController {
     }
 
     // Показ сообщения об успехе
-    // Использует стандартный Alert с типом INFORMATION
     private void showSuccess(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Успех");

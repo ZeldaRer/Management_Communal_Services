@@ -66,9 +66,8 @@
                                         <TableColumn fx:id="unitColumn" prefWidth="60.0" text="Ед.изм." />
                                         <TableColumn fx:id="readingsColumn" prefWidth="80.0" text="Показания" />
                                         <TableColumn fx:id="volumeColumn" prefWidth="80.0" text="Объём" />
-                                        <TableColumn fx:id="tariffColumn" prefWidth="80.0" text="Тариф" />
+                                        <TableColumn fx:id="tariffColumn" prefWidth="80.0" text="Тариф, руб." />
                                         <TableColumn fx:id="normativeColumn" prefWidth="80.0" text="Норматив" />
-                                        <!-- НОВАЯ КОЛОНКА -->
                                         <TableColumn fx:id="calcMonthColumn" prefWidth="100.0" text="Расчётный месяц" />
                                         <TableColumn fx:id="amountColumn" prefWidth="100.0" text="Сумма, руб." />
                                     </columns>
@@ -135,7 +134,7 @@
                                         <Font size="16.0" />
                                     </font>
                                 </Button>
-                                <Button mnemonicParsing="false" onAction="#closeWindow" prefHeight="35.0" prefWidth="200.0" text="Закрыть">
+                                <Button mnemonicParsing="false" onAction="#closeWindow" prefHeight="35.0" prefWidth="250.0" text="Закрыть">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
