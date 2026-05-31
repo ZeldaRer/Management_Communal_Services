@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
 // Контроллер для окна профиля (главное окно)
@@ -32,10 +33,17 @@ public class ProfileController {
     @FXML
     private Label lblArea;
 
-    @FXML private Label lblCurrentAmount;
-    @FXML private Label lblHousingServices;
-    @FXML private Label lblDebt;
-    @FXML private Label lblTotal;
+    @FXML
+    private Label lblCurrentAmount;
+
+    @FXML
+    private Label lblHousingServices;
+
+    @FXML
+    private Label lblDebt;
+
+    @FXML
+    private Label lblTotal;
 
     private int currentOwnerId;
     private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", new java.util.Locale("ru"));
@@ -104,7 +112,6 @@ public class ProfileController {
         if (currentOwnerId == 0) return;
 
         try (Connection conn = DatabaseConnector.getConnection()) {
-
             // 1. Определяем последний месяц с начислениями
             String periodSql = "SELECT year, month FROM Charges WHERE owner_id = ? " +
                     "ORDER BY year DESC, month DESC LIMIT 1";
@@ -124,7 +131,7 @@ public class ProfileController {
             }
 
             if (!hasCharges) {
-                lblPeriod.setText("Счёт за *прошедший месяц*");
+                lblPeriod.setText("Счёт за * прошедший месяц *");
                 lblCurrentAmount.setText("Начислено за текущий период: 0.00 руб.");
                 lblHousingServices.setText("Жилищные услуги: 0.00 руб.");
                 lblDebt.setText("Задолженность: 0.00 руб.");
@@ -132,7 +139,7 @@ public class ProfileController {
                 return;
             }
 
-            // 2. Считаем сумму за текущий период (коммунальные услуги)
+            // 2. Считаем сумму за ТЕКУЩИЙ период (коммунальные услуги)
             String sumSql = "SELECT SUM(amount) as total_amount FROM Charges " +
                     "WHERE owner_id = ? AND year = ? AND month = ?";
 
@@ -165,34 +172,36 @@ public class ProfileController {
                 }
             }
 
-            // 4. Считаем задолженность за прошлые периоды
-            String debtSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? AND is_paid = 0 " +
-                    "AND (month < ? OR (month = ? AND year < ?))";
+            // 4. ИСПРАВЛЕНО: Считаем ВСЕ начисления (включая текущий месяц)
+            String allChargesSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? AND is_paid = 0";
 
-            double debt = 0.0;
-            try (PreparedStatement pstmt = conn.prepareStatement(debtSql)) {
+            double totalDebt = 0.0;
+            try (PreparedStatement pstmt = conn.prepareStatement(allChargesSql)) {
                 pstmt.setInt(1, currentOwnerId);
-                pstmt.setInt(2, lastMonth);
-                pstmt.setInt(3, lastMonth);
-                pstmt.setInt(4, lastYear);
                 ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) debt = rs.getDouble(1);
+                if (rs.next()) {
+                    totalDebt = rs.getDouble(1);
+                }
             }
 
-            // 5. Считаем платежи
+            // 5. Считаем ВСЕ платежи собственника
             String paymentsSql = "SELECT SUM(amount) FROM Payments WHERE owner_id = ?";
-            double payments = 0.0;
+            double totalPayments = 0.0;
             try (PreparedStatement pstmt = conn.prepareStatement(paymentsSql)) {
                 pstmt.setInt(1, currentOwnerId);
                 ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) payments = rs.getDouble(1);
+                if (rs.next()) {
+                    totalPayments = rs.getDouble(1);
+                }
             }
 
-            // 6. Рассчитываем баланс и ИТОГО
-            double balance = payments - debt;
-            double totalToPay = currentAmount + housingServicesAmount + Math.max(0, -balance);
+            // 6. Рассчитываем баланс
+            double balance = totalPayments - totalDebt;
 
-            // Если переплата, вычитаем
+            // ИТОГО к оплате = текущие начисления + жилищные услуги
+            double totalToPay = currentAmount + housingServicesAmount;
+
+            // Если есть переплата, вычитаем её
             if (balance > 0) {
                 totalToPay = Math.max(0, totalToPay - balance);
             }
@@ -200,11 +209,13 @@ public class ProfileController {
             // 7. Обновляем интерфейс
             String monthName = getMonthNameInAccusative(lastMonth);
 
-            lblPeriod.setText("Счёт за " + monthName + " " + lastYear);
-            lblCurrentAmount.setText("Начислено за " + monthName + " " + lastYear + ": " + String.format("%.2f руб.", currentAmount));
+            lblPeriod.setText("Период оплаты: " + formatPeriodWithDates(lastMonth, lastYear));
+            lblCurrentAmount.setText("Начислено за " + monthName + " " + lastYear +
+                    ": " + String.format("%.2f руб.", currentAmount));
 
             // Показываем жилищные услуги отдельной строкой
-            lblHousingServices.setText("Жилищные услуги: " + String.format("%.2f руб.", housingServicesAmount));
+            lblHousingServices.setText("Жилищные услуги: " +
+                    String.format("%.2f руб.", housingServicesAmount));
 
             if (balance < 0) {
                 lblDebt.setText("Задолженность: " + String.format("%.2f руб.", Math.abs(balance)));
@@ -222,6 +233,42 @@ public class ProfileController {
         } catch (SQLException e) {
             e.printStackTrace();
             lblPeriod.setText("Ошибка расчёта");
+        }
+    }
+
+    // Добавьте этот метод для форматирования периода (как в ReceiptController)
+    private String formatPeriodWithDates(int month, int year) {
+        try {
+            java.time.YearMonth previousMonth = java.time.YearMonth.of(year, month).minusMonths(1);
+            int startDay = 25;
+            int daysInPreviousMonth = previousMonth.lengthOfMonth();
+
+            if (startDay > daysInPreviousMonth) {
+                startDay = daysInPreviousMonth;
+            }
+
+            java.time.LocalDate startDate = java.time.LocalDate.of(
+                    previousMonth.getYear(),
+                    previousMonth.getMonthValue(),
+                    startDay
+            );
+
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.YearMonth currentYM = java.time.YearMonth.of(year, month);
+            int endDay = Math.min(today.getDayOfMonth(), currentYM.lengthOfMonth());
+
+            if (today.getMonthValue() != month || today.getYear() != year) {
+                endDay = currentYM.lengthOfMonth();
+            }
+
+            java.time.LocalDate endDate = java.time.LocalDate.of(year, month, endDay);
+
+            java.time.format.DateTimeFormatter formatter =
+                    java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+            return startDate.format(formatter) + " - " + endDate.format(formatter);
+        } catch (Exception e) {
+            return getMonthNameInAccusative(month) + " " + year;
         }
     }
 

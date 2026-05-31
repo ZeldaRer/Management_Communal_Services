@@ -19,6 +19,11 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class OwnerController {
 
     // Поля для отображения контента в правой панели
@@ -87,6 +92,9 @@ public class OwnerController {
 
         // Загружаем данные владельца (включая ФИО) из БД
         loadOwnerData();
+
+        // Проверяем и генерируем начисления при необходимости
+        checkAndGenerateCharges();
 
         // Загружаем профиль (раздел "Главное")
         loadProfile();
@@ -326,6 +334,34 @@ public class OwnerController {
             AnchorPane.setBottomAnchor(root, 0.0);
             AnchorPane.setLeftAnchor(root, 0.0);
             AnchorPane.setRightAnchor(root, 0.0);
+        }
+    }
+
+    // метод для проверки и генерации начислений
+    private void checkAndGenerateCharges() {
+        // Проверяем, есть ли начисления за текущий месяц
+        String checkSql = "SELECT COUNT(*) FROM Charges WHERE owner_id = ? AND month = ? AND year = ?";
+
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(checkSql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            pstmt.setInt(2, currentMonth);
+            pstmt.setInt(3, currentYear);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                // Начислений за текущий месяц нет, генерируем их
+                System.out.println("Начислений за текущий месяц нет. Генерация...");
+                ChargesGenerator.generateChargesForCurrentMonth();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Ошибка при проверке начислений: " + e.getMessage());
         }
     }
 

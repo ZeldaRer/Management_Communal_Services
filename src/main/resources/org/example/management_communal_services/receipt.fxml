@@ -75,6 +75,12 @@
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                     </columnResizePolicy>
                                 </TableView>
+                                <Label fx:id="lblTableTotal" text="Итого за услуги: 0.00 руб."
+                                       style="-fx-font-size: 14px;">
+                                    <VBox.margin>
+                                        <Insets top="10.0" />
+                                    </VBox.margin>
+                                </Label>
                             </children>
                         </VBox>
                         <VBox spacing="5.0">

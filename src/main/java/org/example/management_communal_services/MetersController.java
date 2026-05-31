@@ -66,14 +66,31 @@ public class MetersController {
     @FXML
     private void handleGenerateReceipt() {
         try {
-            // Сначала генерируем начисления за текущий месяц (если нужно)
+            // 1. Сначала принудительно генерируем все начисления за текущий месяц
             ChargesGenerator.generateChargesForCurrentMonth();
 
-            // Получаем последний месяц с начислениями (не с показаниями!)
-            int[] monthYear = getLastChargeMonth();
-            int targetMonth = monthYear[0];
-            int targetYear = monthYear[1];
+            // 2. Определяем текущий месяц (тот, за который смотрим квитанцию)
+            java.time.LocalDate now = java.time.LocalDate.now();
+            int targetMonth = now.getMonthValue();
+            int targetYear = now.getYear();
 
+            // Проверяем, есть ли показания за текущий месяц в базе
+            String checkSql = "SELECT month, year FROM MeterReadings WHERE owner_id = ? AND month = ? AND year = ?";
+            try (Connection conn = DatabaseConnector.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(checkSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                pstmt.setInt(2, targetMonth);
+                pstmt.setInt(3, targetYear);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    targetMonth = rs.getInt("month");
+                    targetYear = rs.getInt("year");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            // 3. Открываем окно квитанции
             FXMLLoader loader = new FXMLLoader(getClass().getResource("receipt.fxml"));
             Parent root = loader.load();
 
@@ -90,28 +107,133 @@ public class MetersController {
         }
     }
 
-    // Получаем последний месяц, за который есть НАЧИСЛЕНИЯ (не показания!)
-    private int[] getLastChargeMonth() {
-        String sql = "SELECT month, year FROM Charges WHERE owner_id = ? " +
+    // Вспомогательный метод для генерации начислений "на лету"
+    // Он берет показания из базы (или нули), считает разницу и пишет в таблицу Charges
+    private void generateChargesForOwnerAndPeriod(int ownerId) {
+        // Определяем период: текущий месяц
+        LocalDate now = LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+
+        // 1. Получаем текущие показания (последние введенные за текущий месяц)
+        double currElec = 0, currHot = 0, currCold = 0;
+        String readingsSql = "SELECT electricity, hot_water, cold_water FROM MeterReadings " +
+                "WHERE owner_id = ? AND month = ? AND year = ? ORDER BY reading_date DESC LIMIT 1";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(readingsSql)) {
+            pstmt.setInt(1, ownerId);
+            pstmt.setInt(2, currentMonth);
+            pstmt.setInt(3, currentYear);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                currElec = rs.getDouble("electricity");
+                currHot = rs.getDouble("hot_water");
+                currCold = rs.getDouble("cold_water");
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        // Если за текущий месяц показаний нет, пробуем найти самые последние доступные
+        if (currElec == 0 && currHot == 0 && currCold == 0) {
+            String lastSql = "SELECT electricity, hot_water, cold_water FROM MeterReadings " +
+                    "WHERE owner_id = ? ORDER BY reading_date DESC LIMIT 1";
+            try (Connection conn = DatabaseConnector.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(lastSql)) {
+                pstmt.setInt(1, ownerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    currElec = rs.getDouble("electricity");
+                    currHot = rs.getDouble("hot_water");
+                    currCold = rs.getDouble("cold_water");
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+
+        // 2. Получаем предыдущие показания (до текущего месяца)
+        double prevElec = 0, prevHot = 0, prevCold = 0;
+        String prevSql = "SELECT electricity, hot_water, cold_water FROM MeterReadings " +
+                "WHERE owner_id = ? AND (year < ? OR (year = ? AND month < ?)) " +
                 "ORDER BY year DESC, month DESC LIMIT 1";
 
         try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, currentOwnerId);
+             PreparedStatement pstmt = conn.prepareStatement(prevSql)) {
+            pstmt.setInt(1, ownerId);
+            pstmt.setInt(2, currentYear);
+            pstmt.setInt(3, currentYear);
+            pstmt.setInt(4, currentMonth);
             ResultSet rs = pstmt.executeQuery();
-
             if (rs.next()) {
-                return new int[]{rs.getInt("month"), rs.getInt("year")};
+                prevElec = rs.getDouble("electricity");
+                prevHot = rs.getDouble("hot_water");
+                prevCold = rs.getDouble("cold_water");
             }
+        } catch (SQLException e) { e.printStackTrace(); }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // 3. Получаем площадь
+        double area = 0;
+        String areaSql = "SELECT area FROM Owners WHERE id = ?";
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(areaSql)) {
+            pstmt.setInt(1, ownerId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) area = rs.getDouble("area");
+        } catch (SQLException e) { e.printStackTrace(); }
 
-        // Если нет начислений, берём текущий месяц
-        LocalDate now = LocalDate.now();
-        return new int[]{now.getMonthValue(), now.getYear()};
+        // 4. Считаем и сохраняем начисления
+        double hotConsumption = currHot - prevHot;
+        double coldConsumption = currCold - prevCold;
+        double totalWater = hotConsumption + coldConsumption;
+
+        String tariffsSql = "SELECT id, service_name, price, normative FROM Tariffs WHERE is_active = 1";
+        String insertSql = "INSERT INTO Charges (owner_id, tariff_id, volume, tariff_price, amount, month, year, is_paid) VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement tStmt = conn.prepareStatement(tariffsSql)) {
+
+            ResultSet tRs = tStmt.executeQuery();
+            while (tRs.next()) {
+                int tariffId = tRs.getInt("id");
+                String name = tRs.getString("service_name");
+                double price = tRs.getDouble("price");
+                double norm = tRs.getDouble("normative");
+
+                double volume = 0;
+
+                if (name.contains("Электричество")) volume = currElec - prevElec;
+                else if (name.contains("ГВС") && name.contains("теплоноситель")) volume = hotConsumption;
+                else if (name.contains("ХВС")) volume = coldConsumption;
+                else if (name.contains("Водоотведение")) volume = totalWater * norm;
+                else if (name.contains("ГВС") && name.contains("тепловая")) volume = hotConsumption * norm;
+                else if (name.contains("Газ")) volume = area * norm;
+                else if (name.contains("ТКО")) volume = area * norm;
+                else if (name.contains("Содержание")) volume = area;
+                else if (name.contains("Отопление")) volume = area * norm;
+
+                double amount = volume * price;
+
+                // Проверяем, нет ли уже такой записи, чтобы не дублировать
+                String checkCharges = "SELECT COUNT(*) FROM Charges WHERE owner_id = ? AND tariff_id = ? AND month = ? AND year = ?";
+                try (PreparedStatement checkStmt = conn.prepareStatement(checkCharges)) {
+                    checkStmt.setInt(1, ownerId);
+                    checkStmt.setInt(2, tariffId);
+                    checkStmt.setInt(3, currentMonth);
+                    checkStmt.setInt(4, currentYear);
+                    ResultSet cRs = checkStmt.executeQuery();
+                    if (cRs.next() && cRs.getInt(1) > 0) continue;
+                }
+
+                try (PreparedStatement iStmt = conn.prepareStatement(insertSql)) {
+                    iStmt.setInt(1, ownerId);
+                    iStmt.setInt(2, tariffId);
+                    iStmt.setDouble(3, volume);
+                    iStmt.setDouble(4, price);
+                    iStmt.setDouble(5, amount);
+                    iStmt.setInt(6, currentMonth);
+                    iStmt.setInt(7, currentYear);
+                    iStmt.executeUpdate();
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     // Инициализация контроллера
@@ -223,6 +345,9 @@ public class MetersController {
 
             // Сохраняем показания
             saveReadings(electricity, hotWater, coldWater);
+
+            // Генерируем начисления за текущий месяц
+            ChargesGenerator.generateChargesForCurrentMonth();
 
             // Очищаем поля
             tfElectricity.clear();
@@ -371,50 +496,37 @@ public class MetersController {
                 while (tariffRs.next()) {
                     int tariffId = tariffRs.getInt("id");
                     String serviceName = tariffRs.getString("service_name");
-                    double price = tariffRs.getDouble("price");
+                    double price = tariffRs.getDouble("price"); // Цена тарифа
                     double normative = tariffRs.getDouble("normative");
-
                     double volume = 0;
 
-                    // ЛОГИКА РАСЧЁТА ДЛЯ КАЖДОЙ УСЛУГИ
+                    // Логика расчета объема
                     if (serviceName.contains("Электричество") || serviceName.contains("Электро")) {
-                        // Счётчик: разница показаний
                         volume = currElec - prevElec;
                     } else if (serviceName.contains("ГВС") && serviceName.contains("теплоноситель")) {
-                        // ГВС (вода): разница показаний
                         volume = currHot - prevHot;
                     } else if (serviceName.contains("ХВС")) {
-                        // ХВС (вода): разница показаний
                         volume = currCold - prevCold;
                     } else if (serviceName.contains("Водоотведение")) {
-                        // Водоотведение: сумма ХВС и ГВС × норматив (обычно 1.0)
                         volume = totalWaterConsumption * normative;
-                    } else if (serviceName.contains("ГВС") && serviceName.contains("тепловая энергия")) {
-                        // ГВС (тепловая энергия): расход ГВС × норматив (0.065 Гкал/м³)
-                        volume = hotWaterConsumption * normative;
-                    } else if (serviceName.contains("Отопление")) {
-                        // Отопление: площадь × норматив
-                        volume = area * normative;
                     } else if (serviceName.contains("Газ")) {
-                        // Газ: площадь × норматив
                         volume = area * normative;
                     } else if (serviceName.contains("ТКО") || serviceName.contains("обращение")) {
-                        // ТКО: площадь × норматив
                         volume = area * normative;
                     } else if (serviceName.contains("Содержание жилья")) {
-                        // Содержание жилья: площадь × тариф (норматив не используется)
                         volume = area;
                     }
 
+                    // РАСЧЕТ СУММЫ
                     double amount = volume * price;
 
-                    // Вставляем в базу
+                    // Вставка в БД
                     try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                         insertStmt.setInt(1, ownerId);
                         insertStmt.setInt(2, tariffId);
                         insertStmt.setDouble(3, volume);
                         insertStmt.setDouble(4, price);
-                        insertStmt.setDouble(5, amount);
+                        insertStmt.setDouble(5, amount); // Сохраняем рассчитанную сумму
                         insertStmt.setInt(6, month);
                         insertStmt.setInt(7, year);
                         insertStmt.executeUpdate();
