@@ -112,7 +112,7 @@ public class ProfileController {
         if (currentOwnerId == 0) return;
 
         try (Connection conn = DatabaseConnector.getConnection()) {
-            // 1. Определяем текущий период (за который формируется квитанция)
+            // 1. Определяем последний месяц с начислениями
             String periodSql = "SELECT year, month FROM Charges WHERE owner_id = ? " +
                     "ORDER BY year DESC, month DESC LIMIT 1";
 
@@ -139,7 +139,7 @@ public class ProfileController {
                 return;
             }
 
-            // 2. Считаем сумму за ТЕКУЩИЙ период (коммунальные услуги)
+            // 2. Считаем сумму за текущий период (коммунальные услуги)
             String sumSql = "SELECT SUM(amount) as total_amount FROM Charges " +
                     "WHERE owner_id = ? AND year = ? AND month = ?";
 
@@ -154,12 +154,12 @@ public class ProfileController {
                 }
             }
 
-            // 3. Считаем стоимость ЖИЛИЩНЫХ УСЛУГ (заявки со статусом "В работе")
+            // 3. Считаем стоимость ЖИЛИЩНЫХ УСЛУГ (только "в работе")
             double housingServicesAmount = 0.0;
             String servicesSql = "SELECT SUM(s.price) as services_total " +
                     "FROM Applications a " +
                     "JOIN Services s ON a.service_id = s.id " +
-                    "WHERE a.owner_id = ? AND a.status = 'в работе'";
+                    "WHERE a.owner_id = ? AND LOWER(a.status) = 'в работе'";
 
             try (PreparedStatement pstmt = conn.prepareStatement(servicesSql)) {
                 pstmt.setInt(1, currentOwnerId);
@@ -172,9 +172,42 @@ public class ProfileController {
                 }
             }
 
-            // 4. ИСПРАВЛЕННАЯ ЛОГИКА: Считаем ОБЩИЙ БАЛАНС
+            // 4. Считаем услуги "выполнено" — они идут в ОБЩИЙ БАЛАНС как уже начисленные
+            double completedServicesAmount = 0.0;
+            String completedSql = "SELECT SUM(s.price) as completed_total " +
+                    "FROM Applications a " +
+                    "JOIN Services s ON a.service_id = s.id " +
+                    "WHERE a.owner_id = ? AND LOWER(a.status) = 'выполнено'";
 
-            // 4.1. Сумма ВСЕХ платежей
+            try (PreparedStatement pstmt = conn.prepareStatement(completedSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    double val = rs.getDouble("completed_total");
+                    if (!rs.wasNull()) {
+                        completedServicesAmount = val;
+                    }
+                }
+            }
+
+            // 5. Рассчитываем ОБЩИЙ БАЛАНС
+            // 5.1. Сумма ВСЕХ начислений за прошлые периоды (коммунальные услуги)
+            String pastChargesSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? " +
+                    "AND (year < ? OR (year = ? AND month < ?))";
+            double pastCharges = 0.0;
+            try (PreparedStatement pstmt = conn.prepareStatement(pastChargesSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                pstmt.setInt(2, lastYear);
+                pstmt.setInt(3, lastYear);
+                pstmt.setInt(4, lastMonth);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    pastCharges = rs.getDouble(1);
+                    if (rs.wasNull()) pastCharges = 0.0;
+                }
+            }
+
+            // 5.2. Сумма ВСЕХ платежей
             String paymentsSql = "SELECT SUM(amount) FROM Payments WHERE owner_id = ?";
             double totalPayments = 0.0;
             try (PreparedStatement pstmt = conn.prepareStatement(paymentsSql)) {
@@ -186,43 +219,31 @@ public class ProfileController {
                 }
             }
 
-            // 4.2. Сумма НЕОПЛАЧЕННЫХ начислений за ПРОШЛЫЕ периоды
-            String debtSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? " +
-                    "AND (year < ? OR (year = ? AND month < ?))";
-            double totalDebt = 0.0;
-            try (PreparedStatement pstmt = conn.prepareStatement(debtSql)) {
-                pstmt.setInt(1, currentOwnerId);
-                pstmt.setInt(2, lastYear);
-                pstmt.setInt(3, lastYear);
-                pstmt.setInt(4, lastMonth);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    totalDebt = rs.getDouble(1);
-                    if (rs.wasNull()) totalDebt = 0.0;
-                }
-            }
+            // 5.3. Рассчитываем баланс
+            // Включаем: прошлые начисления + выполненные услуги
+            double totalOwed = pastCharges + completedServicesAmount;
+            double balance = totalPayments - totalOwed;
 
-            // 4.3. Рассчитываем баланс (переплата или задолженность)
-            double balance = totalPayments - totalDebt;
-
-            // 5. Рассчитываем ИТОГО к оплате
+            // 6. Рассчитываем ИТОГО к оплате
+            // Включаем: текущие начисления + услуги "в работе"
             double totalToPay = currentAmount + housingServicesAmount;
 
             if (balance < 0) {
-                // Есть задолженность за прошлые периоды — добавляем к оплате
+                // Есть задолженность — добавляем к оплате
                 totalToPay += Math.abs(balance);
             } else if (balance > 0) {
-                // Есть переплата — вычитаем из текущей суммы (но не меньше 0)
+                // Есть переплата — вычитаем (но не меньше 0)
                 totalToPay = Math.max(0, totalToPay - balance);
             }
 
-            // 6. Обновляем интерфейс
+            // 7. Обновляем интерфейс
             String monthName = getMonthNameInAccusative(lastMonth);
 
-            lblPeriod.setText("Период оплаты: " + formatPeriodWithDates(lastMonth, lastYear));
+            lblPeriod.setText("Период оплаты: " + formatPeriodWithDates(conn, currentOwnerId, lastMonth, lastYear));
             lblCurrentAmount.setText("Начислено за " + monthName + " " + lastYear +
                     ": " + String.format("%.2f руб.", currentAmount));
 
+            // Показываем только услуги "в работе"
             lblHousingServices.setText("Жилищные услуги: " +
                     String.format("%.2f руб.", housingServicesAmount));
 
@@ -245,42 +266,54 @@ public class ProfileController {
         }
     }
 
-    // Добавьте этот метод для форматирования периода (как в ReceiptController)
-    private String formatPeriodWithDates(int month, int year) {
+    // метод для форматирования периода
+    private String formatPeriodWithDates(Connection conn, int ownerId, int month, int year) {
         try {
-            java.time.YearMonth previousMonth = java.time.YearMonth.of(year, month).minusMonths(1);
-            int startDay = 25;
-            int daysInPreviousMonth = previousMonth.lengthOfMonth();
+            // Начало периода: 25 число предыдущего месяца
+            YearMonth previousMonth = YearMonth.of(year, month).minusMonths(1);
+            int startDay = Math.min(25, previousMonth.lengthOfMonth());
+            LocalDate startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
 
-            if (startDay > daysInPreviousMonth) {
-                startDay = daysInPreviousMonth;
+            // Ищем дату последних показаний за этот месяц
+            String lastReadingSql = "SELECT reading_date FROM MeterReadings " +
+                    "WHERE owner_id = ? AND month = ? AND year = ? " +
+                    "ORDER BY reading_date DESC LIMIT 1";
+
+            LocalDate endDate = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(lastReadingSql)) {
+                pstmt.setInt(1, ownerId);
+                pstmt.setInt(2, month);
+                pstmt.setInt(3, year);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    endDate = LocalDate.parse(rs.getString("reading_date"));
+                }
             }
 
-            java.time.LocalDate startDate = java.time.LocalDate.of(
-                    previousMonth.getYear(),
-                    previousMonth.getMonthValue(),
-                    startDay
-            );
-
-            java.time.LocalDate today = java.time.LocalDate.now();
-            java.time.YearMonth currentYM = java.time.YearMonth.of(year, month);
-            int endDay = Math.min(today.getDayOfMonth(), currentYM.lengthOfMonth());
-
-            if (today.getMonthValue() != month || today.getYear() != year) {
-                endDay = currentYM.lengthOfMonth();
+            // Если показаний за этот месяц нет — ищем любые последние
+            if (endDate == null) {
+                String anyLastSql = "SELECT reading_date FROM MeterReadings " +
+                        "WHERE owner_id = ? ORDER BY reading_date DESC LIMIT 1";
+                try (PreparedStatement pstmt = conn.prepareStatement(anyLastSql)) {
+                    pstmt.setInt(1, ownerId);
+                    ResultSet rs = pstmt.executeQuery();
+                    if (rs.next()) {
+                        endDate = LocalDate.parse(rs.getString("reading_date"));
+                    } else {
+                        // Если показаний вообще нет — конец расчётного месяца
+                        endDate = LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth());
+                    }
+                }
             }
 
-            java.time.LocalDate endDate = java.time.LocalDate.of(year, month, endDay);
-
-            java.time.format.DateTimeFormatter formatter =
-                    java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
             return startDate.format(formatter) + " - " + endDate.format(formatter);
+
         } catch (Exception e) {
-            return getMonthNameInAccusative(month) + " " + year;
+            e.printStackTrace();
+            return "Счёт за " + getMonthNameInAccusative(month) + " " + year;
         }
     }
-
     // Вспомогательный метод для получения названия месяца в именительном падеже
     private String getMonthNameInAccusative(int month) {
         String[] months = {

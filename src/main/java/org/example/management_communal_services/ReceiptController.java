@@ -81,11 +81,41 @@ public class ReceiptController {
         public int getYear() { return year; }
     }
 
+    // Установка данных владельца и периода для квитанции
     public void setOwnerData(int ownerId, int month, int year) {
         this.currentOwnerId = ownerId;
-        this.currentMonth = month;
-        this.currentYear = year;
+
+        // ВМЕСТО того чтобы брать текущий системный месяц,
+        // мы ищем ПОСЛЕДНИЙ месяц, за который есть начисления в БД.
+        // Это предотвратит "поломку" при переходе на новый месяц.
+        findLatestChargePeriod(ownerId);
+
         loadReceiptData();
+    }
+
+    // Новый метод: Поиск последнего периода с начислениями
+    private void findLatestChargePeriod(int ownerId) {
+        String sql = "SELECT month, year FROM Charges WHERE owner_id = ? " +
+                "ORDER BY year DESC, month DESC LIMIT 1";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, ownerId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                this.currentMonth = rs.getInt("month");
+                this.currentYear = rs.getInt("year");
+            } else {
+                // Если данных нет вообще, берем текущий месяц как запасной вариант
+                LocalDate now = LocalDate.now();
+                this.currentMonth = now.getMonthValue();
+                this.currentYear = now.getYear();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadReceiptData() {
@@ -275,25 +305,36 @@ public class ReceiptController {
 
     // Жилищные услуги (регистронезависимый поиск + добавление в сумму)
     private void loadHousingServices() {
-        String sql = "SELECT s.name, s.price FROM Applications a JOIN Services s ON a.service_id = s.id WHERE a.owner_id = ? AND LOWER(a.status) = 'в работе'";
+        // Загружаем ТОЛЬКО услуги "в работе" для отображения
+        String sql = "SELECT s.name, s.price " +
+                "FROM Applications a " +
+                "JOIN Services s ON a.service_id = s.id " +
+                "WHERE a.owner_id = ? AND LOWER(a.status) = 'в работе'";
+
         try (Connection conn = DatabaseConnector.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, currentOwnerId);
             ResultSet rs = pstmt.executeQuery();
+
             housingContainer.getChildren().clear();
+
             while (rs.next()) {
                 String serviceName = rs.getString("name");
                 double price = rs.getDouble("price");
+
                 Label label = new Label(String.format("%s: %.2f руб.", serviceName, price));
                 label.setStyle("-fx-font-size: 14px;");
                 housingContainer.getChildren().add(label);
-                totalAmount += price; // Добавляем в общую сумму
+
+                totalAmount += price;
             }
+
             if (housingContainer.getChildren().isEmpty()) {
                 Label label = new Label("Нет услуг в работе");
                 label.setStyle("-fx-font-size: 14px; -fx-text-fill: gray;");
                 housingContainer.getChildren().add(label);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -307,60 +348,80 @@ public class ReceiptController {
         }
     }
 
-    // Итоговая сумма теперь включает housing services (через totalAmount)
+    // Итоговая сумма с учётом баланса
     private void calculateTotal() {
-        // Считаем задолженность за прошлые периоды
-        String debtSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? AND is_paid = 0 " +
-                "AND (month < ? OR (month = ? AND year < ?))";
-
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(debtSql)) {
-            pstmt.setInt(1, currentOwnerId);
-            pstmt.setInt(2, currentMonth);
-            pstmt.setInt(3, currentMonth);
-            pstmt.setInt(4, currentYear);
-
-            ResultSet rs = pstmt.executeQuery();
-            double debt = 0.0;
-            if (rs.next()) {
-                debt = rs.getDouble(1);
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            // 1. Считаем ВСЕ начисления за прошлые периоды (без текущего месяца)
+            String pastChargesSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? " +
+                    "AND (year < ? OR (year = ? AND month < ?))";
+            double pastCharges = 0.0;
+            try (PreparedStatement pstmt = conn.prepareStatement(pastChargesSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                pstmt.setInt(2, currentYear);
+                pstmt.setInt(3, currentYear);
+                pstmt.setInt(4, currentMonth);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    pastCharges = rs.getDouble(1);
+                    if (rs.wasNull()) pastCharges = 0.0;
+                }
             }
 
-            // Считаем платежи
+            // 2. Считаем ВСЕ платежи
             String paymentsSql = "SELECT SUM(amount) FROM Payments WHERE owner_id = ?";
-            try (PreparedStatement payStmt = conn.prepareStatement(paymentsSql)) {
-                payStmt.setInt(1, currentOwnerId);
-                ResultSet payRs = payStmt.executeQuery();
-                double payments = 0.0;
-                if (payRs.next()) {
-                    payments = payRs.getDouble(1);
+            double totalPayments = 0.0;
+            try (PreparedStatement pstmt = conn.prepareStatement(paymentsSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    totalPayments = rs.getDouble(1);
+                    if (rs.wasNull()) totalPayments = 0.0;
                 }
-
-                // Рассчитываем баланс
-                double balance = payments - debt;
-
-                // Итоговая сумма УЖЕ включает жилищные услуги (из totalAmount)
-                // Поэтому НЕ добавляем housingServicesTotal повторно!
-                double totalToPay = totalAmount;
-
-                if (balance > 0) {
-                    // Переплата - уменьшаем сумму
-                    lblDebt.setText(String.format("Переплата: %.2f руб.", balance));
-                    lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: green;");
-                    totalToPay = Math.max(0, totalToPay - balance);
-                } else if (balance < 0) {
-                    // Долг - увеличиваем сумму
-                    lblDebt.setText(String.format("Задолженность: %.2f руб.", Math.abs(balance)));
-                    lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: red;");
-                    totalToPay += Math.abs(balance);
-                } else {
-                    lblDebt.setText("Задолженность отсутствует");
-                    lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: black;");
-                }
-
-                lblCurrentCharges.setText(String.format("Начислено за текущий период: %.2f руб.", totalAmount));
-                lblTotal.setText(String.format("ИТОГО К ОПЛАТЕ: %.2f руб.", totalToPay));
             }
+
+            // 3. Считаем выполненные услуги — они идут в баланс
+            double completedServicesAmount = 0.0;
+            String completedSql = "SELECT SUM(s.price) " +
+                    "FROM Applications a " +
+                    "JOIN Services s ON a.service_id = s.id " +
+                    "WHERE a.owner_id = ? AND LOWER(a.status) = 'выполнено'";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(completedSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    completedServicesAmount = rs.getDouble(1);
+                    if (rs.wasNull()) completedServicesAmount = 0.0;
+                }
+            }
+
+            // 4. Рассчитываем баланс
+            // Включаем: прошлые начисления + выполненные услуги
+            double totalOwed = pastCharges + completedServicesAmount;
+            double balance = totalPayments - totalOwed;
+
+            // 5. Итоговая сумма: текущие начисления + услуги "в работе"
+            // (totalAmount уже включает housing services из loadHousingServices)
+            double totalToPay = totalAmount;
+
+            if (balance > 0) {
+                // Переплата - уменьшаем сумму
+                lblDebt.setText(String.format("Переплата: %.2f руб.", balance));
+                lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: green;");
+                totalToPay = Math.max(0, totalToPay - balance);
+            } else if (balance < 0) {
+                // Долг - увеличиваем сумму
+                lblDebt.setText(String.format("Задолженность: %.2f руб.", Math.abs(balance)));
+                lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: red;");
+                totalToPay += Math.abs(balance);
+            } else {
+                lblDebt.setText("Задолженность отсутствует");
+                lblDebt.setStyle("-fx-font-size: 16px; -fx-text-fill: black;");
+            }
+
+            lblCurrentCharges.setText(String.format("Начислено за текущий период: %.2f руб.", totalAmount));
+            lblTotal.setText(String.format("ИТОГО К ОПЛАТЕ: %.2f руб.", totalToPay));
+
         } catch (SQLException e) {
             e.printStackTrace();
             lblTotal.setText(String.format("ИТОГО К ОПЛАТЕ: %.2f руб.", totalAmount));
