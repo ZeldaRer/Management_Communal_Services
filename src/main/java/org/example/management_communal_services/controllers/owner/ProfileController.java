@@ -1,9 +1,10 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 
 // Контроллер для окна редактирования данных собственника
 // Позволяет изменять личные данные и пароль
-public class OwnerDetailsController {
+public class ProfileController {
 
     // Поля для ввода личных данных
     @FXML private TextField tfFullName;

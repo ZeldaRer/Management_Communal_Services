@@ -1,12 +1,12 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.poi.xwpf.usermodel.*;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

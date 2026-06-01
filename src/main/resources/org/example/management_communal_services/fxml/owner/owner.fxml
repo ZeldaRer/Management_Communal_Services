@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1000.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.OwnerController">
+<AnchorPane prefHeight="650.0" prefWidth="1000.0" stylesheets="@../../css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.controllers.owner.OwnerController">
    <children>
       <HBox prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -18,7 +18,7 @@
                <children>
                   <ImageView fitHeight="200.0" fitWidth="200.0">
                      <image>
-                        <Image url="@bes.png" />
+                        <Image url="@../../images/bes_logo.png" />
                      </image>
                      <VBox.margin>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -40,7 +40,7 @@
                         <Insets bottom="25.0" />
                      </VBox.margin>
                   </Label>
-                  <Button fx:id="btnProfile" mnemonicParsing="false" onAction="#handleProfile" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Главное" VBox.vgrow="SOMETIMES">
+                  <Button fx:id="btnMain" mnemonicParsing="false" onAction="#handleMain" prefHeight="50.0" prefWidth="270.0" styleClass="sidebar-button" text="Главное" VBox.vgrow="SOMETIMES">
                      <font>
                         <Font size="16.0" />
                      </font>
@@ -90,7 +90,7 @@
                               <Insets left="25.0" right="25.0" />
                            </HBox.margin>
                         </Label>
-                        <Button fx:id="btnOwnerDetails" mnemonicParsing="false" onAction="#handleOwnerDetails" styleClass="sidebar-button" text="Профиль">
+                        <Button fx:id="btnProfile" mnemonicParsing="false" onAction="#handleProfile" styleClass="sidebar-button" text="Профиль">
                            <HBox.margin>
                               <Insets left="25.0" right="25.0" />
                            </HBox.margin>

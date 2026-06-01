@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import org.example.management_communal_services.models.ServiceHistory;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,27 +17,27 @@ import java.sql.SQLException;
 public class HistoryController {
 
     @FXML
-    private TableView<ApplicationHistory> applicationsTable;
+    private TableView<ServiceHistory> applicationsTable;
 
     @FXML
-    private TableColumn<ApplicationHistory, Integer> appNumColumn;  // Порядковый номер
+    private TableColumn<ServiceHistory, Integer> appNumColumn;  // Порядковый номер
 
     @FXML
-    private TableColumn<ApplicationHistory, String> appCategoryColumn;  // Категория
+    private TableColumn<ServiceHistory, String> appCategoryColumn;  // Категория
 
     @FXML
-    private TableColumn<ApplicationHistory, String> appServiceColumn;  // Услуга
+    private TableColumn<ServiceHistory, String> appServiceColumn;  // Услуга
 
     @FXML
-    private TableColumn<ApplicationHistory, String> appDateColumn;
+    private TableColumn<ServiceHistory, String> appDateColumn;
 
     @FXML
-    private TableColumn<ApplicationHistory, String> appDescColumn;
+    private TableColumn<ServiceHistory, String> appDescColumn;
 
     @FXML
-    private TableColumn<ApplicationHistory, String> appStatusColumn;
+    private TableColumn<ServiceHistory, String> appStatusColumn;
 
-    private ObservableList<ApplicationHistory> applicationsList = FXCollections.observableArrayList();
+    private ObservableList<ServiceHistory> applicationsList = FXCollections.observableArrayList();
     private int currentOwnerId;
 
     public void setCurrentOwnerId(int ownerId) {
@@ -96,7 +98,7 @@ public class HistoryController {
                 String description = rs.getString("description");
                 String status = rs.getString("status");
 
-                applicationsList.add(new ApplicationHistory(
+                applicationsList.add(new ServiceHistory(
                         rowNum++,
                         category,
                         serviceName,

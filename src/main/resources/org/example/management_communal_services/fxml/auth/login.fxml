@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.LoginController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.controllers.auth.LoginController">
     <children>
         <HBox layoutX="200.0" layoutY="116.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -20,7 +20,7 @@
                     <children>
                         <ImageView fitHeight="200.0" fitWidth="200.0">
                             <image>
-                                <Image url="@bes.png" />
+                                <Image url="@../../images/bes_logo.png" />
                             </image>
                             <VBox.margin>
                                 <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />

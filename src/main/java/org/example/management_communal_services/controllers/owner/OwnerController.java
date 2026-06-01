@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -10,6 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import org.example.management_communal_services.utils.ChargesGenerator;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -18,11 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class OwnerController {
 
@@ -53,7 +50,7 @@ public class OwnerController {
 
     // Кнопки бокового меню для подсветки активной
     @FXML
-    private Button btnProfile;
+    private Button btnMain;
 
     @FXML
     private Button btnMeters;
@@ -70,9 +67,9 @@ public class OwnerController {
     @FXML
     private Button btnLogout;
 
-    // Кнопка "Данные собственника" в верхней панели
+    // Кнопка "Профиль" в верхней панели
     @FXML
-    private Button btnOwnerDetails;
+    private Button btnProfile;
 
     // ID и имя текущего пользователя
     private int currentOwnerId;
@@ -97,13 +94,13 @@ public class OwnerController {
         checkAndGenerateCharges();
 
         // Загружаем профиль (раздел "Главное")
-        loadProfile();
+        loadMain();
     }
 
     // Инициализация контроллера: установка активной кнопки при старте
     @FXML
     public void initialize() {
-        setActiveButton("profile");
+        setActiveButton("main");
     }
 
     // Запуск таймера для обновления времени и даты каждую секунду
@@ -172,9 +169,9 @@ public class OwnerController {
 
     // Обработчик кнопки "Главное": загружает профиль и подсвечивает кнопку
     @FXML
-    private void handleProfile() {
-        setActiveButton("profile");
-        loadProfile();
+    private void handleMain() {
+        setActiveButton("main");
+        loadMain();
     }
 
     // Обработчик кнопки "Показания счётчиков": загружает окно с передачей показаний
@@ -188,7 +185,7 @@ public class OwnerController {
     @FXML
     private void handleServices() {
         setActiveButton("services");
-        loadFXML("services.fxml");
+        loadFXML("/org/example/management_communal_services/fxml/owner/services.fxml");
     }
 
     // Обработчик кнопки "Подать заявку": загружает форму создания заявки
@@ -197,7 +194,7 @@ public class OwnerController {
     private void handleRequest() {
         setActiveButton("request");
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("request.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/request.fxml"));
             Parent root = loader.load();
 
             // Передаём ID владельца в контроллер заявки
@@ -216,7 +213,7 @@ public class OwnerController {
     private void handleHistory() {
         setActiveButton("history");
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("my-statement.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/history.fxml"));
             Parent root = loader.load();
 
             // Передаём ID владельца в контроллер истории
@@ -229,18 +226,18 @@ public class OwnerController {
         }
     }
 
-    // Обработчик кнопки "Данные собственника": открывает окно редактирования профиля
-    // Подсвечивает кнопку как активную и загружает owner_details.fxml
+    // Обработчик кнопки "профиль": открывает окно редактирования профиля
+    // Подсвечивает кнопку как активную и загружает profile.fxml
     @FXML
-    private void handleOwnerDetails() {
-        setActiveButton("ownerDetails");
+    private void handleProfile() {
+        setActiveButton("profile");
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("owner_details.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/profile.fxml"));
             Parent root = loader.load();
 
             // Передаём ID владельца в контроллер
-            OwnerDetailsController detailsController = loader.getController();
+            ProfileController detailsController = loader.getController();
             detailsController.setCurrentOwnerId(currentOwnerId);
 
             loadContent(root);
@@ -253,17 +250,17 @@ public class OwnerController {
     // Снимает класс "active" со всех кнопок и добавляет нужной
     private void setActiveButton(String buttonName) {
         // Сбрасываем все кнопки (и боковой панели, и верхней)
-        if (btnProfile != null) btnProfile.getStyleClass().remove("active");
+        if (btnMain != null) btnMain.getStyleClass().remove("active");
         if (btnMeters != null) btnMeters.getStyleClass().remove("active");
         if (btnServices != null) btnServices.getStyleClass().remove("active");
         if (btnRequest != null) btnRequest.getStyleClass().remove("active");
         if (btnHistory != null) btnHistory.getStyleClass().remove("active");
-        if (btnOwnerDetails != null) btnOwnerDetails.getStyleClass().remove("active");
+        if (btnProfile != null) btnProfile.getStyleClass().remove("active");
 
         // Добавляем класс active выбранной кнопке
         switch (buttonName) {
-            case "profile":
-                if (btnProfile != null) btnProfile.getStyleClass().add("active");
+            case "main":
+                if (btnMain != null) btnMain.getStyleClass().add("active");
                 break;
             case "meters":
                 if (btnMeters != null) btnMeters.getStyleClass().add("active");
@@ -277,8 +274,8 @@ public class OwnerController {
             case "history":
                 if (btnHistory != null) btnHistory.getStyleClass().add("active");
                 break;
-            case "ownerDetails":
-                if (btnOwnerDetails != null) btnOwnerDetails.getStyleClass().add("active");
+            case "profile":
+                if (btnProfile != null) btnProfile.getStyleClass().add("active");
                 break;
         }
     }
@@ -288,7 +285,7 @@ public class OwnerController {
     private void handleLogout() {
         stopClock();  // Останавливаем таймер
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/auth/login.fxml"));
             contentArea.getScene().setRoot(loader.load());
         } catch (IOException e) {
             e.printStackTrace();
@@ -311,7 +308,7 @@ public class OwnerController {
     // Используется в handleMeters()
     private void loadMeters() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("meters.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/meters.fxml"));
             Parent root = loader.load();
 
             MetersController metersController = loader.getController();
@@ -367,12 +364,12 @@ public class OwnerController {
 
     // Загрузка профиля (раздел "Главное") с передачей ID владельца
     // Вызывается при входе и при выборе раздела "Главное"
-    private void loadProfile() {
+    private void loadMain() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("profile.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/main.fxml"));
             Parent root = loader.load();
 
-            ProfileController profileController = loader.getController();
+            MainController profileController = loader.getController();
             profileController.setCurrentOwnerId(currentOwnerId);
 
             loadContent(root);

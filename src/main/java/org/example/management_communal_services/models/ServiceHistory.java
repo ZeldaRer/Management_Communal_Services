@@ -1,7 +1,7 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.models;
 
 // Модель данных для истории заявок на ремонт
-public class ApplicationHistory {
+public class ServiceHistory {
     private int rowNum;  // Порядковый номер для пользователя
     private String category;  // Категория услуги
     private String serviceName;  // Название услуги
@@ -9,8 +9,8 @@ public class ApplicationHistory {
     private String description;
     private String status;
 
-    public ApplicationHistory(int rowNum, String category, String serviceName,
-                              String date, String description, String status) {
+    public ServiceHistory(int rowNum, String category, String serviceName,
+                          String date, String description, String status) {
         this.rowNum = rowNum;
         this.category = category;
         this.serviceName = serviceName;

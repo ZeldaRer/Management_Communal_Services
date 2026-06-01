@@ -12,13 +12,13 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.control.PasswordField?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="625.0" prefWidth="712.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.RegistrationController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="625.0" prefWidth="712.0" stylesheets="@../../css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.management_communal_services.controllers.auth.RegistrationController">
    <children>
       <VBox alignment="TOP_CENTER" prefHeight="481.0" prefWidth="600.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <ImageView fitHeight="133.0" fitWidth="133.0">
                <image>
-                  <Image url="@bes.png" />
+                  <Image url="@../../images/bes_logo.png" />
                </image>
                <VBox.margin>
                   <Insets />

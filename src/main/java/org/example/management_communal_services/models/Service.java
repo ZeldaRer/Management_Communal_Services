@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.models;
 
 public class Service {
     private String category;

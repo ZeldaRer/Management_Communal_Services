@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import org.example.management_communal_services.utils.DatabaseConnector;
+import org.example.management_communal_services.models.Service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

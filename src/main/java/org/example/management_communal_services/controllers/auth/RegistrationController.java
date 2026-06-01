@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.auth;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -55,7 +56,7 @@ public class RegistrationController {
     @FXML
     private void handleBack() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/auth/login.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) tfFullName.getScene().getWindow();

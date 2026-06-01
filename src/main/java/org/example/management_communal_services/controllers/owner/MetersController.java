@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +9,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import org.example.management_communal_services.utils.ChargesGenerator;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -91,7 +93,7 @@ public class MetersController {
             }
 
             // 3. Открываем окно квитанции
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("receipt.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/receipt.fxml"));
             Parent root = loader.load();
 
             ReceiptController receiptController = loader.getController();

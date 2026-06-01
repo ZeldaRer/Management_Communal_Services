@@ -1,7 +1,8 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 // Контроллер для окна профиля (главное окно)
 // Отображает информацию о собственнике и расчётах
-public class ProfileController {
+public class MainController {
 
     @FXML
     private Label lblAmount;

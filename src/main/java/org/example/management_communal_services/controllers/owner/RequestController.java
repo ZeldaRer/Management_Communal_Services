@@ -1,10 +1,11 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.owner;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import org.example.management_communal_services.utils.DatabaseConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

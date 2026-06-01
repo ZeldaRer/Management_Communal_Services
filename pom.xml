@@ -85,7 +85,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                org.example.management_communal_services/org.example.management_communal_services.Application
+                                org.example.management_communal_services/org.example.management_communal_services.controllers.Application
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

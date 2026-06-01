@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.controllers.auth;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,6 +10,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.example.management_communal_services.utils.DatabaseConnector;
+import org.example.management_communal_services.controllers.owner.OwnerController;
 
 import java.io.IOException;
 import java.sql.*;
@@ -38,7 +40,7 @@ public class LoginController {
 
         if (ownerId > 0) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("owner.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/owner.fxml"));
                 Parent root = loader.load();
 
                 // ПЕРЕДАЁМ ID ВЛАДЕЛЬЦА!
@@ -66,7 +68,7 @@ public class LoginController {
     @FXML
     private void handleRegister() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("registration.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/auth/registration.fxml"));
             Parent root = loader.load();
 
             Stage stage = (Stage) loginField.getScene().getWindow();

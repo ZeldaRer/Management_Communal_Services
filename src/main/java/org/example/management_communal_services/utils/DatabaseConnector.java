@@ -1,4 +1,4 @@
-package org.example.management_communal_services;
+package org.example.management_communal_services.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
