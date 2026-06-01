@@ -11,16 +11,16 @@
   </component>
   <component name="DBNavigator.Project.DatabaseAssistantManager">
     <assistants>
-      <assistant-state connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
-        <tools />
-      </assistant-state>
       <assistant-state connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
         <tools />
       </assistant-state>
-      <assistant-state connection-id="d9af36fc-6ece-4a84-9452-2f15db9bce2b" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
+      <assistant-state connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
         <tools />
       </assistant-state>
       <assistant-state connection-id="d9af36fc-6ece-4a84-9452-2f15db9bce2b" assistant-type="SELECT_AI" default-profile-name="" selected-chat-id="" availability="UNAVAILABLE" acknowledgement="NONE">
+        <tools />
+      </assistant-state>
+      <assistant-state connection-id="d9af36fc-6ece-4a84-9452-2f15db9bce2b" assistant-type="PUBLIC" default-profile-name="" selected-chat-id="" availability="AVAILABLE" acknowledgement="NONE" selected="true">
         <tools />
       </assistant-state>
     </assistants>
@@ -36,7 +36,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf">
-      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[ALTER TABLE Charges DROP COLUMN is_paid;]]></console>
+      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[SELECT owner_id, month, year, COUNT(*) as count 
+FROM Charges 
+GROUP BY owner_id, month, year 
+HAVING count > 1;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -45,6 +48,8 @@
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">

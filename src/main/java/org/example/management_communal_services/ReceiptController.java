@@ -144,23 +144,22 @@ public class ReceiptController {
         }
     }
 
-    // ИСПРАВЛЕНИЕ 1: Период оплаты теперь берет дату из MeterReadings
+    // Период оплаты теперь берет дату из MeterReadings
     private void formatPeriodWithDates() {
-        // 1. Начало периода: 25 число предыдущего месяца (как было)
-        YearMonth previousMonth = YearMonth.of(currentYear, currentMonth).minusMonths(1);
-        int startDay = 25;
-        int daysInPreviousMonth = previousMonth.lengthOfMonth();
-        if (startDay > daysInPreviousMonth) startDay = daysInPreviousMonth;
-        LocalDate startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
+        // 1. Получаем дату ПОСЛЕДНИХ показаний (текущих)
+        String currentReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
+                "WHERE owner_id = ? AND month = ? AND year = ? " +
+                "ORDER BY reading_date DESC LIMIT 1";
 
-        // 2. Конец периода: ДАТА ПОСЛЕДНЕГО ВВОДА ПОКАЗАНИЙ за текущий месяц
         LocalDate endDate = null;
-        String dateSql = "SELECT reading_date FROM MeterReadings WHERE owner_id = ? AND month = ? AND year = ? ORDER BY reading_date DESC LIMIT 1";
+
         try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(dateSql)) {
+             PreparedStatement pstmt = conn.prepareStatement(currentReadingsDateSql)) {
+
             pstmt.setInt(1, currentOwnerId);
             pstmt.setInt(2, currentMonth);
             pstmt.setInt(3, currentYear);
+
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 endDate = LocalDate.parse(rs.getString("reading_date"));
@@ -169,7 +168,45 @@ public class ReceiptController {
             e.printStackTrace();
         }
 
-        // Если показаний нет, берем последнее число месяца
+        // 2. Получаем дату ПРЕДЫДУЩИХ показаний (перед последними)
+        String previousReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
+                "WHERE owner_id = ? " +
+                "AND (year < ? OR (year = ? AND month < ?) OR (year = ? AND month = ? AND reading_date < ?)) " +
+                "ORDER BY year DESC, month DESC, reading_date DESC LIMIT 1";
+
+        LocalDate startDate = null;
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(previousReadingsDateSql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            pstmt.setInt(2, currentYear);
+            pstmt.setInt(3, currentYear);
+            pstmt.setInt(4, currentMonth);
+            pstmt.setInt(5, currentYear);
+            pstmt.setInt(6, currentMonth);
+            pstmt.setString(7, endDate != null ? endDate.toString() : "9999-12-31");
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                startDate = LocalDate.parse(rs.getString("reading_date"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Если нет предыдущих показаний, берём 25 число предыдущего месяца
+        if (startDate == null) {
+            YearMonth previousMonth = YearMonth.of(currentYear, currentMonth).minusMonths(1);
+            int startDay = 25;
+            int daysInPreviousMonth = previousMonth.lengthOfMonth();
+            if (startDay > daysInPreviousMonth) {
+                startDay = daysInPreviousMonth;
+            }
+            startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
+        }
+
+        // Если нет текущих показаний, берём последнее число месяца
         if (endDate == null) {
             YearMonth currentYM = YearMonth.of(currentYear, currentMonth);
             endDate = LocalDate.of(currentYear, currentMonth, currentYM.lengthOfMonth());

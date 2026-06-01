@@ -240,8 +240,7 @@ public class ProfileController {
             String monthName = getMonthNameInAccusative(lastMonth);
 
             lblPeriod.setText("Период оплаты: " + formatPeriodWithDates(conn, currentOwnerId, lastMonth, lastYear));
-            lblCurrentAmount.setText("Начислено за " + monthName + " " + lastYear +
-                    ": " + String.format("%.2f руб.", currentAmount));
+            lblCurrentAmount.setText("Начислено за текущий период: " + String.format("%.2f руб.", currentAmount));
 
             // Показываем только услуги "в работе"
             lblHousingServices.setText("Жилищные услуги: " +
@@ -269,18 +268,37 @@ public class ProfileController {
     // метод для форматирования периода
     private String formatPeriodWithDates(Connection conn, int ownerId, int month, int year) {
         try {
-            // Начало периода: 25 число предыдущего месяца
-            YearMonth previousMonth = YearMonth.of(year, month).minusMonths(1);
-            int startDay = Math.min(25, previousMonth.lengthOfMonth());
-            LocalDate startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
+            // Ищем дату ПРЕДЫДУЩИХ показаний (начало периода)
+            String previousReadingSql = "SELECT reading_date FROM MeterReadings " +
+                    "WHERE owner_id = ? AND (year < ? OR (year = ? AND month < ?)) " +
+                    "ORDER BY year DESC, month DESC, reading_date DESC LIMIT 1";
 
-            // Ищем дату последних показаний за этот месяц
-            String lastReadingSql = "SELECT reading_date FROM MeterReadings " +
+            LocalDate startDate = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(previousReadingSql)) {
+                pstmt.setInt(1, ownerId);
+                pstmt.setInt(2, year);
+                pstmt.setInt(3, year);
+                pstmt.setInt(4, month);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    startDate = LocalDate.parse(rs.getString("reading_date"));
+                }
+            }
+
+            // Если предыдущих показаний нет — берём 25 число предыдущего месяца
+            if (startDate == null) {
+                YearMonth previousMonth = YearMonth.of(year, month).minusMonths(1);
+                int startDay = Math.min(25, previousMonth.lengthOfMonth());
+                startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
+            }
+
+            // Ищем дату ТЕКУЩИХ показаний (конец периода)
+            String currentReadingSql = "SELECT reading_date FROM MeterReadings " +
                     "WHERE owner_id = ? AND month = ? AND year = ? " +
                     "ORDER BY reading_date DESC LIMIT 1";
 
             LocalDate endDate = null;
-            try (PreparedStatement pstmt = conn.prepareStatement(lastReadingSql)) {
+            try (PreparedStatement pstmt = conn.prepareStatement(currentReadingSql)) {
                 pstmt.setInt(1, ownerId);
                 pstmt.setInt(2, month);
                 pstmt.setInt(3, year);
@@ -290,20 +308,9 @@ public class ProfileController {
                 }
             }
 
-            // Если показаний за этот месяц нет — ищем любые последние
+            // Если показаний за этот месяц нет — берём последнее число месяца
             if (endDate == null) {
-                String anyLastSql = "SELECT reading_date FROM MeterReadings " +
-                        "WHERE owner_id = ? ORDER BY reading_date DESC LIMIT 1";
-                try (PreparedStatement pstmt = conn.prepareStatement(anyLastSql)) {
-                    pstmt.setInt(1, ownerId);
-                    ResultSet rs = pstmt.executeQuery();
-                    if (rs.next()) {
-                        endDate = LocalDate.parse(rs.getString("reading_date"));
-                    } else {
-                        // Если показаний вообще нет — конец расчётного месяца
-                        endDate = LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth());
-                    }
-                }
+                endDate = LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth());
             }
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -314,6 +321,7 @@ public class ProfileController {
             return "Счёт за " + getMonthNameInAccusative(month) + " " + year;
         }
     }
+
     // Вспомогательный метод для получения названия месяца в именительном падеже
     private String getMonthNameInAccusative(int month) {
         String[] months = {
