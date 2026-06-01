@@ -68,31 +68,21 @@ public class MetersController {
     @FXML
     private void handleGenerateReceipt() {
         try {
-            // 1. Сначала принудительно генерируем все начисления за текущий месяц
-            ChargesGenerator.generateChargesForCurrentMonth();
-
-            // 2. Определяем текущий месяц (тот, за который смотрим квитанцию)
-            java.time.LocalDate now = java.time.LocalDate.now();
-            int targetMonth = now.getMonthValue();
-            int targetYear = now.getYear();
-
-            // Проверяем, есть ли показания за текущий месяц в базе
-            String checkSql = "SELECT month, year FROM MeterReadings WHERE owner_id = ? AND month = ? AND year = ?";
-            try (Connection conn = DatabaseConnector.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(checkSql)) {
-                pstmt.setInt(1, currentOwnerId);
-                pstmt.setInt(2, targetMonth);
-                pstmt.setInt(3, targetYear);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    targetMonth = rs.getInt("month");
-                    targetYear = rs.getInt("year");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+            // 1. ПРОВЕРЯЕМ наличие минимум 2 разных дат показаний
+            if (!hasEnoughReadings()) {
+                showError("Невозможно сформировать квитанцию: необходимо ввести показания минимум 2 раза " +
+                        "с интервалом не менее 15 дней для расчёта расхода.");
+                return;
             }
 
-            // 3. Открываем окно квитанции
+            // 2. Генерируем начисления ТОЛЬКО если есть показания
+            ChargesGenerator.generateChargesForCurrentMonth();
+
+            // 3. Определяем период для квитанции (последний месяц с начислениями)
+            int[] monthYear = getLastChargeMonth();
+            int targetMonth = monthYear[0];
+            int targetYear = monthYear[1];
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/management_communal_services/fxml/owner/receipt.fxml"));
             Parent root = loader.load();
 
@@ -106,7 +96,77 @@ public class MetersController {
 
         } catch (IOException e) {
             e.printStackTrace();
+            showError("Ошибка при открытии квитанции");
         }
+    }
+
+    // Вспомогательный метод: проверка наличия минимум 2 разных дат показаний
+    private boolean hasEnoughReadings() {
+        String sql = "SELECT COUNT(DISTINCT reading_date) as date_count " +
+                "FROM MeterReadings WHERE owner_id = ?";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                int dateCount = rs.getInt("date_count");
+                return dateCount >= 2;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Получить последний месяц с начислениями
+    private int[] getLastChargeMonth() {
+        String sql = "SELECT month, year FROM Charges WHERE owner_id = ? " +
+                "ORDER BY year DESC, month DESC LIMIT 1";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return new int[]{rs.getInt("month"), rs.getInt("year")};
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Если нет начислений, возвращаем текущий месяц
+        LocalDate now = LocalDate.now();
+        return new int[]{now.getMonthValue(), now.getYear()};
+    }
+
+    // Вспомогательный метод: проверка наличия показаний за текущий месяц
+    private boolean hasReadingsForCurrentMonth() {
+        LocalDate now = LocalDate.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+
+        String sql = "SELECT COUNT(*) FROM MeterReadings WHERE owner_id = ? AND month = ? AND year = ?";
+
+        try (Connection conn = DatabaseConnector.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, currentOwnerId);
+            pstmt.setInt(2, currentMonth);
+            pstmt.setInt(3, currentYear);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // Вспомогательный метод для генерации начислений "на лету"
@@ -348,8 +408,8 @@ public class MetersController {
             // Сохраняем показания
             saveReadings(electricity, hotWater, coldWater);
 
-            // Генерируем начисления за текущий месяц
-            ChargesGenerator.generateChargesForCurrentMonth();
+//            // Генерируем начисления за текущий месяц
+//            ChargesGenerator.generateChargesForCurrentMonth();
 
             // Очищаем поля
             tfElectricity.clear();
@@ -442,6 +502,27 @@ public class MetersController {
     private void generateChargesForCurrentMonth(Connection conn, int ownerId, int month, int year,
                                                 double currElec, double currHot, double currCold) {
         try {
+            // ПРОВЕРКА: есть ли предыдущие показания
+            String prevCheckSql = "SELECT COUNT(*) FROM MeterReadings " +
+                    "WHERE owner_id = ? AND (year < ? OR (year = ? AND month < ?))";
+            int prevCount = 0;
+            try (PreparedStatement checkStmt = conn.prepareStatement(prevCheckSql)) {
+                checkStmt.setInt(1, ownerId);
+                checkStmt.setInt(2, year);
+                checkStmt.setInt(3, year);
+                checkStmt.setInt(4, month);
+                ResultSet rs = checkStmt.executeQuery();
+                if (rs.next()) {
+                    prevCount = rs.getInt(1);
+                }
+            }
+
+            // Если предыдущих показаний нет — НЕ создаём начисления!
+            if (prevCount == 0) {
+                System.out.println("Первый ввод показаний. Начисления не формируются.");
+                return;
+            }
+
             // Проверка на дубликаты
             String checkSql = "SELECT COUNT(*) FROM Charges WHERE owner_id = ? AND month = ? AND year = ?";
             try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -450,7 +531,7 @@ public class MetersController {
                 checkStmt.setInt(3, year);
                 ResultSet rs = checkStmt.executeQuery();
                 if (rs.next() && rs.getInt(1) > 0) {
-                    return;
+                    return; // Уже есть начисления за этот месяц
                 }
             }
 

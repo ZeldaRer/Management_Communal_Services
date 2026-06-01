@@ -51,12 +51,12 @@ public class MainController {
 
     // Установка ID текущего владельца и загрузка данных
     public void setCurrentOwnerId(int ownerId) {
-        System.out.println("ProfileController: setCurrentOwnerId вызван с ownerId = " + ownerId);
+        System.out.println("MainController: setCurrentOwnerId вызван с ownerId = " + ownerId);
         this.currentOwnerId = ownerId;
 
         // Используем Platform.runLater для гарантии инициализации FXML элементов
         javafx.application.Platform.runLater(() -> {
-            System.out.println("ProfileController: загрузка данных...");
+            System.out.println("MainController: загрузка данных...");
             loadProfileData();
             loadLastCharge();
         });
@@ -65,13 +65,14 @@ public class MainController {
     // Инициализация контроллера
     @FXML
     public void initialize() {
-        System.out.println("ProfileController: initialize() вызван");
+        System.out.println("MainController: initialize() вызван");
     }
 
     // Загрузка данных профиля из базы данных
+    // Заполняет лейблы ФИО, номер счёта, адрес и площадь
     private void loadProfileData() {
         if (currentOwnerId == 0) {
-            System.out.println("ProfileController: currentOwnerId = 0, пропускаем загрузку");
+            System.out.println("MainController: currentOwnerId = 0, пропускаем загрузку");
             return;
         }
 
@@ -85,7 +86,7 @@ public class MainController {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                System.out.println("ProfileController: данные найдены в БД");
+                System.out.println("MainController: данные найдены в БД");
 
                 String fullName = rs.getString("full_name");
                 String accountNumber = rs.getString("account_number");
@@ -100,7 +101,7 @@ public class MainController {
                 if (lblArea != null) lblArea.setText(String.valueOf(area));
 
             } else {
-                System.out.println("ProfileController: данные не найдены для owner_id = " + currentOwnerId);
+                System.out.println("MainController: данные не найдены для owner_id = " + currentOwnerId);
             }
 
         } catch (SQLException e) {
@@ -109,11 +110,34 @@ public class MainController {
     }
 
     // Загрузка начислений и расчёт итоговой суммы (как в квитанции)
+    // Включает проверку наличия показаний и корректное формирование периода
     private void loadLastCharge() {
         if (currentOwnerId == 0) return;
 
         try (Connection conn = DatabaseConnector.getConnection()) {
-            // 1. Определяем последний месяц с начислениями
+
+            // 1. ПРОВЕРЯЕМ наличие показаний счётчиков
+            String readingsCheckSql = "SELECT COUNT(*) as count FROM MeterReadings WHERE owner_id = ?";
+            int readingsCount = 0;
+            try (PreparedStatement pstmt = conn.prepareStatement(readingsCheckSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    readingsCount = rs.getInt("count");
+                }
+            }
+
+            // Если показаний вообще нет — показываем сообщение
+            if (readingsCount == 0) {
+                lblPeriod.setText("Нет показаний счётчиков");
+                lblCurrentAmount.setText("Начислено за текущий период: 0.00 руб.");
+                lblHousingServices.setText("Жилищные услуги: 0.00 руб.");
+                lblDebt.setText("Задолженность: 0.00 руб.");
+                lblTotal.setText("ИТОГО: 0.00 руб.");
+                return;
+            }
+
+            // 2. Определяем последний месяц с начислениями
             String periodSql = "SELECT year, month FROM Charges WHERE owner_id = ? " +
                     "ORDER BY year DESC, month DESC LIMIT 1";
 
@@ -132,7 +156,7 @@ public class MainController {
             }
 
             if (!hasCharges) {
-                lblPeriod.setText("Счёт за * прошедший месяц *");
+                lblPeriod.setText("Нет начислений за текущий период");
                 lblCurrentAmount.setText("Начислено за текущий период: 0.00 руб.");
                 lblHousingServices.setText("Жилищные услуги: 0.00 руб.");
                 lblDebt.setText("Задолженность: 0.00 руб.");
@@ -140,7 +164,30 @@ public class MainController {
                 return;
             }
 
-            // 2. Считаем сумму за текущий период (коммунальные услуги)
+            // 3. ПРОВЕРЯЕМ, хватает ли показаний для формирования периода
+            // Нужно минимум 2 разные даты ввода показаний
+            String readingsCountSql = "SELECT COUNT(DISTINCT reading_date) as date_count " +
+                    "FROM MeterReadings WHERE owner_id = ?";
+            int distinctDates = 0;
+            try (PreparedStatement pstmt = conn.prepareStatement(readingsCountSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    distinctDates = rs.getInt("date_count");
+                }
+            }
+
+            // Если показаний меньше 2 раз, период сформировать нельзя
+            if (distinctDates < 2) {
+                lblPeriod.setText("Не хватает показаний счётчиков для формирования периода оплаты");
+                lblCurrentAmount.setText("Начислено за текущий период: 0.00 руб.");
+                lblHousingServices.setText("Жилищные услуги: 0.00 руб.");
+                lblDebt.setText("Задолженность: 0.00 руб.");
+                lblTotal.setText("ИТОГО: 0.00 руб.");
+                return;
+            }
+
+            // 4. Считаем сумму за текущий период (коммунальные услуги)
             String sumSql = "SELECT SUM(amount) as total_amount FROM Charges " +
                     "WHERE owner_id = ? AND year = ? AND month = ?";
 
@@ -155,7 +202,7 @@ public class MainController {
                 }
             }
 
-            // 3. Считаем стоимость ЖИЛИЩНЫХ УСЛУГ (только "в работе")
+            // 5. Считаем стоимость ЖИЛИЩНЫХ УСЛУГ (только "в работе")
             double housingServicesAmount = 0.0;
             String servicesSql = "SELECT SUM(s.price) as services_total " +
                     "FROM Applications a " +
@@ -173,7 +220,7 @@ public class MainController {
                 }
             }
 
-            // 4. Считаем услуги "выполнено" — они идут в ОБЩИЙ БАЛАНС как уже начисленные
+            // 6. Считаем услуги "выполнено" — они идут в ОБЩИЙ БАЛАНС как уже начисленные
             double completedServicesAmount = 0.0;
             String completedSql = "SELECT SUM(s.price) as completed_total " +
                     "FROM Applications a " +
@@ -191,8 +238,8 @@ public class MainController {
                 }
             }
 
-            // 5. Рассчитываем ОБЩИЙ БАЛАНС
-            // 5.1. Сумма ВСЕХ начислений за прошлые периоды (коммунальные услуги)
+            // 7. Рассчитываем ОБЩИЙ БАЛАНС
+            // 7.1. Сумма ВСЕХ начислений за прошлые периоды (коммунальные услуги)
             String pastChargesSql = "SELECT SUM(amount) FROM Charges WHERE owner_id = ? " +
                     "AND (year < ? OR (year = ? AND month < ?))";
             double pastCharges = 0.0;
@@ -208,7 +255,7 @@ public class MainController {
                 }
             }
 
-            // 5.2. Сумма ВСЕХ платежей
+            // 7.2. Сумма ВСЕХ платежей
             String paymentsSql = "SELECT SUM(amount) FROM Payments WHERE owner_id = ?";
             double totalPayments = 0.0;
             try (PreparedStatement pstmt = conn.prepareStatement(paymentsSql)) {
@@ -220,12 +267,12 @@ public class MainController {
                 }
             }
 
-            // 5.3. Рассчитываем баланс
+            // 7.3. Рассчитываем баланс
             // Включаем: прошлые начисления + выполненные услуги
             double totalOwed = pastCharges + completedServicesAmount;
             double balance = totalPayments - totalOwed;
 
-            // 6. Рассчитываем ИТОГО к оплате
+            // 8. Рассчитываем ИТОГО к оплате
             // Включаем: текущие начисления + услуги "в работе"
             double totalToPay = currentAmount + housingServicesAmount;
 
@@ -237,7 +284,7 @@ public class MainController {
                 totalToPay = Math.max(0, totalToPay - balance);
             }
 
-            // 7. Обновляем интерфейс
+            // 9. Обновляем интерфейс
             String monthName = getMonthNameInAccusative(lastMonth);
 
             lblPeriod.setText("Период оплаты: " + formatPeriodWithDates(conn, currentOwnerId, lastMonth, lastYear));
@@ -266,7 +313,9 @@ public class MainController {
         }
     }
 
-    // метод для форматирования периода
+    // Метод для форматирования периода оплаты с датами
+    // Возвращает период в формате "дд.мм.гггг - дд.мм.гггг"
+    // Или сообщение об ошибке, если недостаточно данных
     private String formatPeriodWithDates(Connection conn, int ownerId, int month, int year) {
         try {
             // Ищем дату ПРЕДЫДУЩИХ показаний (начало периода)
@@ -286,13 +335,6 @@ public class MainController {
                 }
             }
 
-            // Если предыдущих показаний нет — берём 25 число предыдущего месяца
-            if (startDate == null) {
-                YearMonth previousMonth = YearMonth.of(year, month).minusMonths(1);
-                int startDay = Math.min(25, previousMonth.lengthOfMonth());
-                startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
-            }
-
             // Ищем дату ТЕКУЩИХ показаний (конец периода)
             String currentReadingSql = "SELECT reading_date FROM MeterReadings " +
                     "WHERE owner_id = ? AND month = ? AND year = ? " +
@@ -309,9 +351,9 @@ public class MainController {
                 }
             }
 
-            // Если показаний за этот месяц нет — берём последнее число месяца
-            if (endDate == null) {
-                endDate = LocalDate.of(year, month, YearMonth.of(year, month).lengthOfMonth());
+            // ПРОВЕРКА: если не хватает показаний для формирования периода
+            if (startDate == null || endDate == null) {
+                return "Не хватает показаний счётчиков для формирования периода";
             }
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -319,7 +361,7 @@ public class MainController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return "Счёт за " + getMonthNameInAccusative(month) + " " + year;
+            return "Ошибка при формировании периода";
         }
     }
 

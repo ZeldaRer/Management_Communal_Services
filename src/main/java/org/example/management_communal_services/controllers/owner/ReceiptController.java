@@ -146,78 +146,101 @@ public class ReceiptController {
 
     // Период оплаты теперь берет дату из MeterReadings
     private void formatPeriodWithDates() {
-        // 1. Получаем дату ПОСЛЕДНИХ показаний (текущих)
-        String currentReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
-                "WHERE owner_id = ? AND month = ? AND year = ? " +
-                "ORDER BY reading_date DESC LIMIT 1";
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            // 1. ПРОВЕРЯЕМ, сколько раз вводились показания
+            String readingsCountSql = "SELECT COUNT(DISTINCT reading_date) as date_count " +
+                    "FROM MeterReadings WHERE owner_id = ?";
+            int distinctDates = 0;
 
-        LocalDate endDate = null;
-
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(currentReadingsDateSql)) {
-
-            pstmt.setInt(1, currentOwnerId);
-            pstmt.setInt(2, currentMonth);
-            pstmt.setInt(3, currentYear);
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                endDate = LocalDate.parse(rs.getString("reading_date"));
+            try (PreparedStatement pstmt = conn.prepareStatement(readingsCountSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    distinctDates = rs.getInt("date_count");
+                }
             }
+
+            // Если показаний меньше 2 раз, период сформировать нельзя
+            if (distinctDates < 2) {
+                lblPeriod.setText("Не хватает показаний счётчиков для формирования периода оплаты");
+                return;
+            }
+
+            // 2. Ищем дату ПРЕДЫДУЩИХ показаний (начало периода)
+            String previousReadingSql = "SELECT reading_date FROM MeterReadings " +
+                    "WHERE owner_id = ? AND (year < ? OR (year = ? AND month < ?)) " +
+                    "ORDER BY year DESC, month DESC, reading_date DESC LIMIT 1";
+
+            LocalDate startDate = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(previousReadingSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                pstmt.setInt(2, currentYear);
+                pstmt.setInt(3, currentYear);
+                pstmt.setInt(4, currentMonth);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    startDate = LocalDate.parse(rs.getString("reading_date"));
+                }
+            }
+
+            // 3. Ищем дату ТЕКУЩИХ показаний (конец периода)
+            String currentReadingSql = "SELECT reading_date FROM MeterReadings " +
+                    "WHERE owner_id = ? AND month = ? AND year = ? " +
+                    "ORDER BY reading_date DESC LIMIT 1";
+
+            LocalDate endDate = null;
+            try (PreparedStatement pstmt = conn.prepareStatement(currentReadingSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                pstmt.setInt(2, currentMonth);
+                pstmt.setInt(3, currentYear);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    endDate = LocalDate.parse(rs.getString("reading_date"));
+                }
+            }
+
+            // Если не нашли даты, показываем сообщение
+            if (startDate == null || endDate == null) {
+                lblPeriod.setText("Не хватает показаний счётчиков для формирования периода оплаты");
+                return;
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            String periodText = "Период оплаты: " + startDate.format(formatter) + " - " + endDate.format(formatter);
+            lblPeriod.setText(periodText);
+
         } catch (SQLException e) {
             e.printStackTrace();
+            lblPeriod.setText("Ошибка при формировании периода");
         }
-
-        // 2. Получаем дату ПРЕДЫДУЩИХ показаний (перед последними)
-        String previousReadingsDateSql = "SELECT reading_date FROM MeterReadings " +
-                "WHERE owner_id = ? " +
-                "AND (year < ? OR (year = ? AND month < ?) OR (year = ? AND month = ? AND reading_date < ?)) " +
-                "ORDER BY year DESC, month DESC, reading_date DESC LIMIT 1";
-
-        LocalDate startDate = null;
-
-        try (Connection conn = DatabaseConnector.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(previousReadingsDateSql)) {
-
-            pstmt.setInt(1, currentOwnerId);
-            pstmt.setInt(2, currentYear);
-            pstmt.setInt(3, currentYear);
-            pstmt.setInt(4, currentMonth);
-            pstmt.setInt(5, currentYear);
-            pstmt.setInt(6, currentMonth);
-            pstmt.setString(7, endDate != null ? endDate.toString() : "9999-12-31");
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                startDate = LocalDate.parse(rs.getString("reading_date"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        // Если нет предыдущих показаний, берём 25 число предыдущего месяца
-        if (startDate == null) {
-            YearMonth previousMonth = YearMonth.of(currentYear, currentMonth).minusMonths(1);
-            int startDay = 25;
-            int daysInPreviousMonth = previousMonth.lengthOfMonth();
-            if (startDay > daysInPreviousMonth) {
-                startDay = daysInPreviousMonth;
-            }
-            startDate = LocalDate.of(previousMonth.getYear(), previousMonth.getMonthValue(), startDay);
-        }
-
-        // Если нет текущих показаний, берём последнее число месяца
-        if (endDate == null) {
-            YearMonth currentYM = YearMonth.of(currentYear, currentMonth);
-            endDate = LocalDate.of(currentYear, currentMonth, currentYM.lengthOfMonth());
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        String periodText = "Период оплаты: " + startDate.format(formatter) + " - " + endDate.format(formatter);
-        lblPeriod.setText(periodText);
     }
 
     private void loadChargesTable() {
+
+        // Сначала проверяем, хватает ли показаний
+        try (Connection conn = DatabaseConnector.getConnection()) {
+            String readingsCountSql = "SELECT COUNT(DISTINCT reading_date) as date_count " +
+                    "FROM MeterReadings WHERE owner_id = ?";
+            int distinctDates = 0;
+
+            try (PreparedStatement pstmt = conn.prepareStatement(readingsCountSql)) {
+                pstmt.setInt(1, currentOwnerId);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    distinctDates = rs.getInt("date_count");
+                }
+            }
+
+            // Если показаний меньше 2, очищаем таблицу и выходим
+            if (distinctDates < 2) {
+                chargesTable.getItems().clear();
+                totalAmount = 0.0;
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         // Получаем ПОСЛЕДНИЕ доступные показания (не обязательно за этот месяц)
         String currentReadingsSql = "SELECT electricity, hot_water, cold_water, month, year " +
                 "FROM MeterReadings " +

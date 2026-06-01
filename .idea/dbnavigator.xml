@@ -48,7 +48,7 @@ HAVING count > 1;]]></console>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Tariffs" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
     </open-files>
   </component>
