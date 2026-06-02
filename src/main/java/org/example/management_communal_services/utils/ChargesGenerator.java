@@ -4,11 +4,11 @@ import java.sql.*;
 import java.time.LocalDate;
 
 // Автоматическая генерация начислений за месяц
-// Вызывается при открытии квитанции или по кнопке "Сформировать начисления"
+// Вызывается при сохранении показаний или при открытии квитанции
 public class ChargesGenerator {
 
     // Генерация начислений за текущий месяц
-    // Теперь генерируем ТОЛЬКО для тех, кто ввёл показания
+    // Генерируем ТОЛЬКО для тех, кто ввёл показания
     public static void generateChargesForCurrentMonth() {
         LocalDate now = LocalDate.now();
         int currentMonth = now.getMonthValue();
@@ -37,11 +37,8 @@ public class ChargesGenerator {
                 }
             }
 
-            System.out.println("Начисления за " + getMonthName(currentMonth) + " " + currentYear + " сгенерированы для собственников, ввёдших показания");
-
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Ошибка при генерации начислений: " + e.getMessage());
         }
     }
 
@@ -95,7 +92,7 @@ public class ChargesGenerator {
         }
     }
 
-    // Генерация начислений для конкретного владельца с переданными показаниями
+    // Генерация начислений для конкретного владельца
     private static void generateChargesForOwner(Connection conn, int ownerId, double area, int month, int year,
                                                 double currElec, double currHot, double currCold,
                                                 double prevElec, double prevHot, double prevCold) throws SQLException {
@@ -119,7 +116,6 @@ public class ChargesGenerator {
                 double normative = rs.getDouble("normative");
 
                 double volume = 0;
-                double amount = 0;
 
                 // Логика расчёта для каждой услуги
                 if (serviceName.toLowerCase().contains("электро")) {
@@ -131,9 +127,19 @@ public class ChargesGenerator {
                 } else if (serviceName.contains("Водоотведение")) {
                     volume = totalWaterConsumption * normative;
                 } else if (serviceName.contains("ГВС") && serviceName.contains("тепловая энергия")) {
-                    volume = hotWaterConsumption * normative;
+                    // ИСПРАВЛЕНО: если нет потребления ГВС, считаем от площади
+                    if (normative > 0) {
+                        if (hotWaterConsumption > 0) {
+                            volume = hotWaterConsumption * normative;
+                        } else {
+                            volume = area * normative;
+                        }
+                    }
                 } else if (serviceName.contains("Отопление")) {
-                    volume = area * normative;
+                    // ИСПРАВЛЕНО: явный расчёт от площади
+                    if (normative > 0) {
+                        volume = area * normative;
+                    }
                 } else if (serviceName.contains("Газ")) {
                     volume = area * normative;
                 } else if (serviceName.contains("ТКО") || serviceName.contains("обращение")) {
@@ -142,8 +148,22 @@ public class ChargesGenerator {
                     volume = area;
                 }
 
-                amount = volume * tariffPrice;
+                double amount = volume * tariffPrice;
 
+                // Проверка на дубликаты
+                String checkSql = "SELECT COUNT(*) FROM Charges WHERE owner_id = ? AND tariff_id = ? AND month = ? AND year = ?";
+                try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                    checkStmt.setInt(1, ownerId);
+                    checkStmt.setInt(2, tariffId);
+                    checkStmt.setInt(3, month);
+                    checkStmt.setInt(4, year);
+                    ResultSet checkRs = checkStmt.executeQuery();
+                    if (checkRs.next() && checkRs.getInt(1) > 0) {
+                        continue; // Пропускаем дубликат
+                    }
+                }
+
+                // Вставка в БД
                 try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                     insertStmt.setInt(1, ownerId);
                     insertStmt.setInt(2, tariffId);
@@ -171,11 +191,5 @@ public class ChargesGenerator {
             }
         }
         return false;
-    }
-
-    private static String getMonthName(int month) {
-        String[] months = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-                "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
-        return months[month - 1];
     }
 }

@@ -36,10 +36,7 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf">
-      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[SELECT owner_id, month, year, COUNT(*) as count 
-FROM Charges 
-GROUP BY owner_id, month, year 
-HAVING count > 1;]]></console>
+      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[DELETE FROM Charges WHERE owner_id = 6 AND month = 6 AND year = 2026;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
@@ -48,6 +45,8 @@ HAVING count > 1;]]></console>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
+      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Owners" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Tariffs" />
       <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
     </open-files>
