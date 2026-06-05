@@ -36,20 +36,14 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf">
-      <console name="Besenok" type="STANDARD" schema="main" session="Main"><![CDATA[DELETE FROM Charges WHERE owner_id = 6 AND month = 6 AND year = 2026;]]></console>
+      <console name="Besenok" type="STANDARD" schema="main" session="Main">DELETE FROM Charges WHERE owner_id = 6 AND month = 6 AND year = 2026;</console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Charges" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="consoles/Besenok" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Owners" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/Tariffs" />
-      <object connection-id="2ceb1eec-f0c3-4c4d-9b00-db206fb67edf" object-ref="schemas/main/tables/MeterReadings" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabasePrerequisiteManager">
     <prerequisites />
@@ -144,7 +138,7 @@
           <session-management value="true" />
           <ddl-file-binding value="true" />
           <database-logging value="true" />
-          <connect-automatically value="true" />
+          <connect-automatically value="false" />
           <restore-workspace value="true" />
           <restore-workspace-deep value="false" />
           <environment-type value="default" />
