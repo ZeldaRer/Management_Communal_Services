@@ -568,7 +568,6 @@ public class ReceiptController {
             infoRun.setColor("666666");
         }
 
-        addEmptyLine(document);
         addSectionTitle(document, "Жилищные услуги");
         for (var node : housingContainer.getChildren()) {
             if (node instanceof Label) addParagraph(document, ((Label) node).getText());
